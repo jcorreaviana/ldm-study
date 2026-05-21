@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDM Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #13161d;
+  --surface2: #1a1e28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf0;
+  --text2: #8890a4;
+  --text3: #535970;
+  --accent: #4f8fff;
+  --accent-dim: rgba(79,143,255,0.12);
+  --accent-border: rgba(79,143,255,0.3);
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,0.1);
+  --green-border: rgba(62,207,142,0.25);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.1);
+  --coral: #f87171;
+  --coral-dim: rgba(248,113,113,0.1);
+  --teal: #2dd4bf;
+  --teal-dim: rgba(45,212,191,0.1);
+  --font-body: 'Sora', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.logo-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.logo-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -.02em;
+}
+.logo-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.progress-section {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.progress-label {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.progress-track {
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 0 20px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background .15s;
+  position: relative;
+  border-left: 2px solid transparent;
+}
+.nav-item:hover { background: var(--surface2); }
+.nav-item.active {
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+.nav-day-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.nav-day-text {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+.nav-item.active .nav-day-text { color: var(--text); }
+.nav-check {
+  font-size: 14px;
+  color: var(--green);
+  opacity: 0;
+  flex-shrink: 0;
+  transition: opacity .2s;
+}
+.nav-check.visible { opacity: 1; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--border);
+}
+.sidebar-footer-text {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+/* ── MAIN ── */
+.main {
+  padding: 32px 40px;
+  max-width: 900px;
+}
+
+.day-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.day-number-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.day-header-text {}
+.day-header-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.03em;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.day-header-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* ── MODULE CARDS ── */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mod-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+  overflow: hidden;
+}
+.mod-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.mod-card:hover { background: var(--surface2); border-color: var(--border2); }
+.mod-card:hover::before { opacity: 1; }
+.mod-card.active { border-color: var(--accent-border); background: var(--accent-dim); }
+.mod-card.active::before { background: var(--accent); opacity: 1; }
+.mod-card.done { border-color: var(--green-border); }
+.mod-card.done::before { background: var(--green); opacity: 1; }
+
+.mod-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.mod-type-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+}
+.type-teoria { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+.type-pratica { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.type-material { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,.25); }
+.type-discovery { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,.25); }
+
+.mod-done-icon { font-size: 16px; color: var(--green); opacity: 0; transition: opacity .2s; }
+.mod-done-icon.visible { opacity: 1; }
+
+.mod-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+.mod-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.mod-kaggle-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+  animation: slideIn .2s ease;
+}
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.detail-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-title { font-size: 16px; font-weight: 500; color: var(--text); letter-spacing: -.01em; }
+.detail-close {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--text2);
+  transition: background .15s;
+}
+.detail-close:hover { background: var(--surface2); color: var(--text); }
+
+.detail-sections { display: flex; flex-direction: column; gap: 18px; }
+.detail-sec-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.detail-body {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+
+.kaggle-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 8px;
+}
+.kaggle-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.kaggle-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--teal);
+  background: var(--teal-dim);
+  border: 1px solid rgba(45,212,191,.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.kaggle-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s;
+  font-family: var(--font-mono);
+}
+.kaggle-link-btn:hover { background: rgba(79,143,255,.2); text-decoration: none; }
+
+.deliverable-block {
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,166,35,.2);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.deliverable-block i { font-size: 16px; color: var(--amber); flex-shrink: 0; margin-top: 1px; }
+.deliverable-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: var(--font-body);
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+}
+.btn:hover { border-color: var(--border2); color: var(--text); background: #222636; }
+.btn-primary { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+.btn-primary:hover { background: rgba(79,143,255,.2); }
+.btn-success { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
+.btn-success:hover { background: rgba(62,207,142,.18); }
+
+/* ── DAY FOOTER ── */
+.day-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.footer-deliverables {
+  font-size: 12px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+.mark-day-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: var(--font-body);
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all .15s;
+}
+.mark-day-btn:hover { border-color: var(--green-border); color: var(--green); }
+.mark-day-btn.done { border-color: var(--green-border); background: var(--green-dim); color: var(--green); }
+
+/* ── COLOR CLASSES ── */
+.c-d1 { background: rgba(99,85,255,.12); color: #a598ff; border-color: rgba(99,85,255,.3); }
+.c-d2 { background: rgba(16,185,129,.1); color: #34d399; border-color: rgba(16,185,129,.3); }
+.c-d3 { background: rgba(245,166,35,.1); color: #f5a623; border-color: rgba(245,166,35,.3); }
+.c-d4 { background: rgba(248,113,113,.1); color: #f87171; border-color: rgba(248,113,113,.3); }
+.c-d5 { background: rgba(79,143,255,.12); color: #4f8fff; border-color: rgba(79,143,255,.3); }
+.c-d6 { background: rgba(52,211,153,.1); color: #34d399; border-color: rgba(52,211,153,.3); }
+.c-d7 { background: rgba(248,113,113,.1); color: #fb923c; border-color: rgba(248,113,113,.3); }
+
+.mod-card .c-d1::before { background: #a598ff; }
+.mod-card .c-d2::before { background: #34d399; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 24px 20px; }
+  .modules-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-label">NeoSpace</div>
+    <div class="logo-title">LDM Academy</div>
+    <div class="logo-sub">Produto &amp; soluções · 7 dias</div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-label">
+      <span>Progresso</span>
+      <span id="prog-text">0 / 7</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Dias</div>
+  <nav id="day-nav"></nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">
+      Clique em um módulo para ver o conteúdo completo, exercício Kaggle e entregável.
+    </div>
+  </div>
+</aside>
+
+<main class="main" id="main-content"></main>
+
+</div>
+
+<script>
+const DAYS = [
+{
+  id:1, color:"c-d1", label:"Dia 1",
+  title:"O que é o LDM — e por que existe",
+  desc:"Entender o problema que o LDM resolve antes de qualquer coisa técnica. Base de todas as conversas com clientes.",
+  modules:[
+    {
+      id:"1a", type:"teoria",
+      title:"O pipeline clássico de ML",
+      desc:"Como empresas usam ML hoje: feature store → modelo → regras → ação.",
+      teoria:"O pipeline industrial de ML tem 5 camadas: coleta de dados → agregação em features → feature store → modelos especializados → camada de regras de negócio. Cada camada tem um custo de manutenção. O problema central é que esse pipeline é rígido: quando o mercado muda (ex: Pix no Brasil), as features precisam ser redesenhadas do zero, o que leva meses e exige equipes especializadas.",
+      kaggle:"Abra o dataset 'Credit Card Fraud Detection' no Kaggle. Observe as colunas V1-V28: são features já transformadas via PCA. Isso ilustra o ponto — alguém fez o trabalho de agregar e transformar os dados brutos antes de qualquer modelo ver. Pergunte-se: quantas pessoas e quanto tempo custou construir essas features? O que acontece quando o padrão de fraude muda?",
+      kaggle_url:"https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud",
+      saida:"Esboço do pipeline atual de um cliente fictício (banco ou telecom) com estimativa de custo de manutenção"
+    },
+    {
+      id:"1b", type:"teoria",
+      title:"O 'feature engineering wall'",
+      desc:"Por que agregar dados antes do modelo é limitante — os 10 motivos.",
+      teoria:"O whitepaper da NeoSpace lista 10 razões pelas quais feature engineering limita modelos: (1) perda de informação irreversível, (2) impossibilidade de agregar texto de forma significativa, (3) subrepresentação de clientes com poucos dados, (4) 'knowledge imprinting' — bias humano embutido, (5) custo de manutenção de feature stores, (6) especificidade de domínio, (7) rigidez temporal — mudanças de mercado invalidam features, (8) 'mean tyranny' — médias apagam picos comportamentais críticos, (9) 'causal blindness' — o modelo confirma hipóteses existentes, (10) windows fixas que não se adaptam. A analogia com AlphaZero é central: o modelo que aprende sem regras humanas supera aquele que aprende com elas.",
+      kaggle:"No dataset de fraude, explore as features de tempo: 'Time' (segundos desde primeira transação) e 'Amount'. Observe que são os únicos campos brutos — todo o resto é PCA. Agora imagine: um fraudador que muda o padrão de horário gradualmente ao longo de semanas seria capturado por essas features? Esse é o 'mean tyranny' e a 'rigidez temporal' em ação.",
+      kaggle_url:"https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud",
+      saida:"Lista das 10 limitações traduzidas em linguagem de cliente — uma frase por limitação, sem jargão técnico"
+    },
+    {
+      id:"1c", type:"material",
+      title:"Leitura: whitepaper NeoSpace",
+      desc:"Leitura completa de neospace.ai/neoldmpaper com anotações dirigidas.",
+      teoria:"Leia o whitepaper com estas 5 perguntas em mente: (1) Qual é o estado atual do cliente antes de contratar a NeoSpace? (2) O que muda concretamente depois? (3) Quais métricas de resultado eles citam? (4) Quais setores são mencionados como casos de uso? (5) Quais trechos você usaria em uma conversa de vendas com um CDO?\n\nAnote especialmente: a analogia com AlphaZero (página 3), os 10 problemas de agregação (página 5), a distinção entre predictive e prescriptive post-training, e os números de resultado: 15-60% de melhoria relativa, 12+ tarefas testadas.",
+      kaggle:null,
+      kaggle_url:"https://www.neospace.ai/neoldmpaper",
+      saida:"Resumo de 1 página: problema → solução → evidências de resultado → 3 trechos para usar em vendas"
+    }
+  ]
+},
+{
+  id:2, color:"c-d2", label:"Dia 2",
+  title:"Como o LDM funciona — intuição sem código",
+  desc:"Vocabulário técnico suficiente para conversar com engenheiros e clientes. Sem implementação.",
+  modules:[
+    {
+      id:"2a", type:"teoria",
+      title:"Transformer: a intuição",
+      desc:"O que é atenção, token, sequência. Analogias práticas sem matemática.",
+      teoria:"Um transformer lê uma sequência de itens (tokens) e aprende quais são mais relevantes para entender cada outro — isso é 'atenção'. Analogia de cliente: imagine que um cliente fez 200 transações no último ano. O transformer olha cada transação e pergunta: 'dado que estou tentando entender essa transação, quais das outras 199 são mais relevantes?'\n\nUm modelo clássico calcularia médias e perderia esse contexto. Um transformer memoriza que 3 saques em caixas diferentes em 10 minutos + uma compra online no mesmo dia = padrão específico que nenhuma feature agregada captura.\n\nO mecanismo de atenção permite que o modelo 'olhe para trás' com pesos diferentes para cada evento passado, dependendo do contexto atual.",
+      kaggle:"No dataset de e-commerce (UCI Online Retail), ordene as transações de um único cliente por data e visualize a sequência. Escolha um cliente com 20+ transações. Observe: há sazonalidade? Há padrões de categoria? Há mudanças de comportamento ao longo do tempo? Esse exercício manual demonstra o que o transformer faz automaticamente para milhões de clientes.",
+      kaggle_url:"https://www.kaggle.com/datasets/carrie1/ecommerce-data",
+      saida:"Explicação do transformer em 3 parágrafos para um executivo não-técnico — sem nenhum jargão de ML"
+    },
+    {
+      id:"2b", type:"teoria",
+      title:"Os 5 blocos da arquitetura LDM",
+      desc:"Field encoders → fusion → temporal → spatial → output. O papel de cada bloco.",
+      teoria:"1. Field encoders: converte cada campo (valor numérico, categoria, texto livre, timestamp) em um vetor numérico — uma 'representação geométrica' do dado. É o 'tradutor' universal.\n\n2. Local fusion layers: combina os campos de um mesmo evento para capturar interações. Ex: 'valor alto + horário incomum + localização nova' juntos = sinal de fraude que cada campo separado não revela.\n\n3. Temporal backbone: aprende dependências ao longo do tempo na sequência de eventos de um cliente. Captura o que aconteceu, em que ordem, e como padrões evoluem.\n\n4. Spatial backbone: aprende relações entre entidades diferentes (clientes que compartilham padrões de comportamento, mesmo sem conhecimento prévio de que são similares).\n\n5. Latent-state processor: converte o estado aprendido em uma decisão ou previsão — o 'output' que vai para os sistemas do cliente.",
+      kaggle:"No dataset Telco Customer Churn, identifique quais colunas correspondem a cada bloco: (1) field encoders — cada coluna individual; (2) local fusion — combinações como 'MultipleLines + OnlineSecurity'; (3) temporal — imagine a sequência de chamadas de suporte que gerou 'tenure'; (4) spatial — clientes com perfis similares; (5) output — a coluna 'Churn'. Esse mapeamento mental é o que você faria em um discovery real.",
+      kaggle_url:"https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+      saida:"Diagrama anotado dos 5 blocos com exemplos de cada setor (fintech, telecom, varejo)"
+    },
+    {
+      id:"2c", type:"teoria",
+      title:"Pre-train → predictive → prescriptive",
+      desc:"O ciclo de valor do produto NeoSpace em 3 fases.",
+      teoria:"Fase 1 — Pre-train: O modelo 'lê' o histórico completo da empresa sem labels. Aprende o que é normal, quais sequências precedem quais eventos, quais padrões são universais vs. sazonais. É como contratar alguém que leu todos os documentos da empresa sem receber nenhuma instrução específica.\n\nFase 2 — Predictive post-train: Fine-tune para tarefas específicas: 'esse cliente vai churnar nos próximos 30 dias?' O modelo usa o conhecimento do pré-treino para responder com muito mais precisão do que um modelo treinado do zero.\n\nFase 3 — Prescriptive post-train: O maior salto de valor. O modelo aprende a tomar decisões otimizadas: 'dado esse cliente, qual é a melhor oferta, canal, timing e limite, respeitando as restrições de capital e regulatório?' O modelo absorve a camada de regras de negócio — ela deixa de ser código manual e vira comportamento aprendido.",
+      kaggle:"No dataset de churn da Telco, escreva o objetivo de cada fase em linguagem de negócio para esse cliente: (pre-train) o que o modelo aprende lendo todos os registros sem labels; (predictive) qual pergunta específica ele responde; (prescriptive) qual decisão ele tomaria, incluindo as restrições do negócio. Esse exercício é o que você faria para montar uma proposta de valor.",
+      kaggle_url:"https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+      saida:"Fluxo de valor das 3 fases em linguagem de C-level — uma slide de apresentação executiva"
+    }
+  ]
+},
+{
+  id:3, color:"c-d3", label:"Dia 3",
+  title:"O cliente — pipeline atual e dores reais",
+  desc:"Entender profundamente o que o cliente já tem. Você não vende uma solução sem entender o problema.",
+  modules:[
+    {
+      id:"3a", type:"discovery",
+      title:"Mapeando o pipeline atual",
+      desc:"Como desenhar o estado atual de qualquer cliente em 30 minutos.",
+      teoria:"Perguntas para mapear o pipeline atual em uma conversa de discovery:\n\n(1) Que dados vocês coletam hoje, e onde eles ficam?\n(2) Quem transforma esses dados em features? Quanto tempo leva por nova feature?\n(3) Quantos modelos vocês têm em produção atualmente?\n(4) Qual é o processo quando um modelo começa a degradar?\n(5) Quanto tempo leva desde 'identificamos um problema no modelo' até 'está corrigido em produção'?\n(6) Vocês têm uma feature store? Quem é o dono?\n(7) Como vocês lidam com clientes novos, com pouco histórico?\n\nCada resposta revela um custo — e um argumento para o LDM. Uma empresa com 50+ modelos em produção e 6 data scientists só para manutenção tem um problema de escala óbvio.",
+      kaggle:"Use o dataset IEEE-CIS Fraud Detection para simular o exercício. Ele tem 400+ features já engenheiradas. Abra o data dictionary e conte: quantas features são aggregations (mean, std, max por categoria)? Quanto trabalho de engenharia elas representam? Estime o custo de manutenção anual assumindo 2 data scientists em dedicação parcial.",
+      kaggle_url:"https://www.kaggle.com/c/ieee-fraud-detection",
+      saida:"Template de mapa do pipeline atual — para usar em qualquer discovery (1 página com campos em branco)"
+    },
+    {
+      id:"3b", type:"discovery",
+      title:"10 perguntas de discovery",
+      desc:"Cada limitação de feature engineering vira uma pergunta de diagnóstico.",
+      teoria:"Mapeamento direto whitepaper → pergunta de discovery:\n\n(1) Rigidez temporal → 'Vocês já tiveram um modelo que funcionava bem e degradou depois de uma mudança de mercado? Quanto tempo levou para corrigir?'\n(2) Custo de feature store → 'Quanto tempo leva para adicionar uma nova fonte de dados aos modelos existentes?'\n(3) Explosão de modelos → 'Vocês têm modelos diferentes por produto, canal ou segmento? Quantos?'\n(4) Inexpressividade de texto → 'Vocês conseguem usar dados de texto — chats, tickets, notas — nos modelos de decisão?'\n(5) Sparsity → 'Como vocês lidam com clientes novos que têm pouco histórico?'\n(6) Knowledge imprinting → 'Quando um modelo sugere algo inesperado, o time confia ou descarta?'\n(7) Mean tyranny → 'Vocês conseguem detectar mudanças bruscas de comportamento, ou só padrões estáveis?'\n(8) Domain specificity → 'Os mesmos modelos funcionam para produtos diferentes, ou cada um precisa de um modelo customizado?'\n(9) Custo de manutenção → 'Qual % do tempo do time de dados é manutenção vs. novos projetos?'\n(10) Causal blindness → 'O modelo de vocês já descobriu algum padrão que surpreendeu o negócio?'",
+      kaggle:"No dataset de churn da Telco, identifique evidências das 10 limitações nos próprios dados: quais colunas seriam difíceis de atualizar? Quais clientes teriam dados esparsos? Quais padrões a média apagaria? Isso gera exemplos concretos para usar nas perguntas de discovery.",
+      kaggle_url:"https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+      saida:"Documento com 10 perguntas + o que cada resposta revela + como conectar com a proposta de valor do LDM"
+    },
+    {
+      id:"3c", type:"material",
+      title:"Personas e stakeholders",
+      desc:"CDO, Head de Risco, Head de Produto, CTO — quem sente o quê.",
+      teoria:"CDO / Chief Data Officer: sente o custo de manutenção do pipeline, quer consolidar modelos e reduzir dívida técnica. Argumento central: um LDM unificado substitui dezenas de modelos especializados.\n\nHead de Risco: quer melhor performance em detecção de fraude/default, com explicabilidade para o regulador. Argumento: 15-60% de ganho de performance + outputs auditáveis.\n\nHead de Produto: quer personalização real, não segmentos. Argumento: ações individualizadas por cliente, não por cluster.\n\nCTO: quer integração com stack existente, segurança, SLA, e não quer um 'big bang'. Argumento: NeoData conecta com qualquer warehouse, SOC2/GDPR, migração gradual.\n\nCFO: quer ROI claro. Argumento: redução de custo de manutenção + ganho de performance quantificado em R$.",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"Mapa de stakeholders: persona → dor principal → argumento LDM → objeção típica → resposta"
+    }
+  ]
+},
+{
+  id:4, color:"c-d4", label:"Dia 4",
+  title:"Setores-alvo — vocabulário e dados típicos",
+  desc:"Fintech, telecom e varejo. O vocabulário de cada setor e os casos de uso do LDM.",
+  modules:[
+    {
+      id:"4a", type:"teoria",
+      title:"Serviços financeiros",
+      desc:"Crédito, fraude, churn, pricing. O vocabulário essencial.",
+      teoria:"Termos que você precisa dominar: PD (Probability of Default — probabilidade de inadimplência), LGD (Loss Given Default — quanto se perde dado o default), EAD (Exposure at Default — quanto está em risco), Gini/AUROC (métricas de discriminação do modelo), NPS (Net Promoter Score), CLV (Customer Lifetime Value), score de propensão, limite de crédito.\n\nCasos de uso do LDM no setor:\n• Scoring de crédito: usa sequência bruta de transações, não médias. Captura mudanças comportamentais recentes sem reprocessamento.\n• Detecção de fraude em real-time: uma transação dispara reavaliação imediata do perfil completo.\n• Next Best Action: qual produto, canal, timing e mensagem para cada cliente individualmente.\n• Pricing dinâmico: limite e taxa otimizados por cliente, não por segmento.",
+      kaggle:"Dataset 'Give Me Some Credit': previsão de inadimplência. Explore as features — todas são agregações (DebtRatio, MonthlyIncome, NumberOfTimes90DaysLate). Para cada feature, escreva: (1) qual dado bruto ela resume, (2) qual informação ela perde, (3) como o LDM abordaria diferente usando a sequência bruta de eventos.",
+      kaggle_url:"https://www.kaggle.com/c/GiveMeSomeCredit",
+      saida:"Glossário fintech (20 termos) + mapa de casos de uso LDM no setor com impacto estimado"
+    },
+    {
+      id:"4b", type:"teoria",
+      title:"Telecom",
+      desc:"Churn, qualidade de rede, next best action. Os dados CDR.",
+      teoria:"Termos essenciais: CDR (Call Detail Records — registros de chamadas e dados), KPIs de rede (RSRP: força do sinal, SINR: qualidade do sinal, throughput: velocidade, latência), QoE (Quality of Experience), ARPU (Average Revenue Per User — receita média por usuário), churn rate, NPS, IVR/URA (atendimento automatizado).\n\nO whitepaper usa telecom como exemplo principal de pre-training — a riqueza de eventos é enorme: sessões de dados, chamadas, interações com suporte, trocas de plano, reclamações, eventos de rede.\n\nCasos de uso do LDM no setor:\n• Churn prediction: a sequência 'degradação de rede → reclamação → downgrade → churn' tem um timing específico que modelos clássicos não capturam.\n• Network-triggered next best action: uma queda de qualidade de rede pode disparar proativamente uma oferta de upgrade antes da reclamação.\n• Fraud detection: padrões de roaming fraudulento visíveis na sequência de eventos.",
+      kaggle:"No dataset Telco Customer Churn, imagine a sequência de eventos que gerou cada coluna: quando o cliente contratou 'PhoneService', quando ligou para o suporte (gerando 'TechTickets'), quando o contrato foi negociado. Construa um event stream hipotético de 3 clientes — um churner, um leal, um em risco. Qual sequência os diferencia?",
+      kaggle_url:"https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+      saida:"Mapa de event stream típico de telecom + 5 casos de uso do LDM com argumento de venda direto"
+    },
+    {
+      id:"4c", type:"teoria",
+      title:"Varejo e e-commerce",
+      desc:"Recomendação, propensão, pricing dinâmico. O event stream de navegação.",
+      teoria:"Termos essenciais: CTR (Click-Through Rate), conversion rate, basket size, LTV (Lifetime Value), RFM (Recency, Frequency, Monetary — modelo clássico de segmentação), propensão de compra, abandono de carrinho, NPS.\n\nO RFM é o modelo clássico de varejo — e é um exemplo perfeito do 'feature engineering wall': resume toda a trajetória do cliente em 3 números. O LDM usa a sequência completa de eventos: pageviews, buscas, adição e remoção de carrinho, comparações, tempo na página, retornos.\n\nCasos de uso do LDM:\n• Recomendação: usa contexto de sessão atual + histórico completo, não apenas compras passadas.\n• Propensão de compra: prevê intenção antes da conversão, baseado em padrões de navegação.\n• Detecção de fraude de devolução: sequências suspeitas de compra-devolução visíveis no histórico.\n• Pricing dinâmico por perfil comportamental.",
+      kaggle:"Dataset 'E-Commerce Data' (UCI): calcule o RFM clássico de 5 clientes. Depois, analise a sequência de transações desses mesmos clientes cronologicamente. O que o RFM esconde? Quais padrões temporais seriam captados pelo LDM mas não pelo RFM? Use isso como argumento de venda.",
+      kaggle_url:"https://www.kaggle.com/datasets/carrie1/ecommerce-data",
+      saida:"Comparação visual RFM clássico vs. event stream — argumento de venda direto para CDOs de varejo"
+    }
+  ]
+},
+{
+  id:5, color:"c-d5", label:"Dia 5",
+  title:"Discovery, tradução de problemas e features de produto",
+  desc:"O núcleo do seu papel: converter dores em soluções e padrões recorrentes em oportunidades.",
+  modules:[
+    {
+      id:"5a", type:"discovery",
+      title:"Framework de discovery",
+      desc:"Roteiro para conduzir um diagnóstico completo em 45 minutos.",
+      teoria:"Estrutura em 4 blocos:\n\n(1) Contexto (5 min): setor, tamanho, stack atual, maturidade analítica. 'Qual é a principal fonte de dados que vocês usam para decisões de clientes hoje?'\n\n(2) Dor (15 min): onde os modelos atuais falham, qual é o custo, quem sente. 'Me conta de uma vez que um modelo de vocês deixou na mão.' Deixe o silêncio trabalhar.\n\n(3) Tentativas anteriores (10 min): o que já foi tentado, por que não funcionou. 'Vocês já tentaram resolver isso antes? O que aconteceu?' Essa resposta revela as objeções reais.\n\n(4) Visão de sucesso (10 min): como seria diferente com o problema resolvido. 'Se daqui a 12 meses vocês olharem para trás e disserem que foi um sucesso, o que terá acontecido?' Essa resposta define os KPIs do projeto.\n\nRegra de ouro: você fala 20% do tempo. O cliente fala 80%.",
+      kaggle:"Simule o discovery com o dataset Bank Marketing (UCI/Kaggle): imagine que você está conversando com o Head de Produto desse banco. Quais das 10 perguntas do Dia 3 você faria? Quais respostas você esperaria ao ver as features disponíveis? Quais dores são evidentes nos próprios dados?",
+      kaggle_url:"https://www.kaggle.com/datasets/henriqueyamahata/bank-marketing",
+      saida:"Roteiro de discovery com 15 perguntas estruturadas, agrupadas nos 4 blocos, com dicas de escuta"
+    },
+    {
+      id:"5b", type:"discovery",
+      title:"Problema → solução LDM",
+      desc:"Traduzir cada dor em uma capacidade técnica do produto.",
+      teoria:"Exemplos de tradução direta:\n\n'Nosso modelo de crédito perdeu 8 pontos de Gini depois do Pix' → rigidez temporal (limitação 7) → o LDM aprende estruturalmente mudanças de comportamento em real-time, sem reprocessamento de features.\n\n'Temos 80 modelos em produção e 6 pessoas só para manutenção' → explosão de modelos especializados → um LDM unificado substitui todos com uma representação única.\n\n'Não conseguimos usar os chats do suporte nos modelos' → inexpressividade de texto em feature stores → o LDM processa texto nativamente como campo de evento.\n\n'Nosso modelo trata clientes novos igual a desconhecidos' → underrepresentation of sparsity → o spatial backbone aprende de clientes similares para inferir o perfil de clientes com pouco histórico.\n\n'O regulador pediu explicação e não conseguimos dar' → falta de auditabilidade → o prescriptive output do LDM é estruturado e auditável por design.",
+      kaggle:"No dataset IEEE-CIS Fraud Detection, escolha 3 features que são claramente aggregations (ex: 'TransactionAmt_mean_by_card'). Para cada uma: (1) qual dor de cliente ela tentou resolver, (2) qual limitação ela introduz, (3) como o LDM abordaria diferente. Esse exercício é o 'antes e depois' que você usa em apresentações.",
+      kaggle_url:"https://www.kaggle.com/c/ieee-fraud-detection",
+      saida:"10 cartões de tradução: problema do cliente → limitação técnica → capacidade LDM → impacto esperado"
+    },
+    {
+      id:"5c", type:"material",
+      title:"Template de log de insights de produto",
+      desc:"Como capturar padrões de cliente que viram features de produto.",
+      teoria:"Estrutura do log de insights:\n\n(1) Cliente / setor\n(2) Problema relatado (na voz do cliente)\n(3) Frequência: único ou padrão recorrente?\n(4) Impacto estimado para o cliente\n(5) Capacidade atual do LDM que endereça (ou parcialmente endereça)\n(6) Gap identificado — o que o LDM ainda não faz\n(7) Proposta de feature ou melhoria\n(8) Esforço estimado (P / M / G)\n(9) Outros clientes com o mesmo problema?\n\nRegra de ouro: um problema único é um workaround de implementação. Um padrão em 3+ clientes do mesmo setor é uma feature de produto. 5+ clientes de setores diferentes é uma feature core da plataforma. Seu papel é reconhecer essa diferença e escalar o sinal certo para o produto.",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"Template preenchido com 3 exemplos hipotéticos — um por setor (fintech, telecom, varejo) — com todos os campos"
+    }
+  ]
+},
+{
+  id:6, color:"c-d6", label:"Dia 6",
+  title:"Métricas, ROI e linguagem de negócio",
+  desc:"Traduzir performance técnica em impacto financeiro. A linguagem do C-level.",
+  modules:[
+    {
+      id:"6a", type:"teoria",
+      title:"Métricas de modelo para não-técnicos",
+      desc:"AUROC, Gini, F1, precision vs recall — o que significam em R$.",
+      teoria:"AUROC: 'de cada 100 pares cliente bom/ruim, em quantos o modelo acerta a ordem?' 0.5 = aleatório, 0.9 = excelente. Gini = 2 × AUROC − 1. Um Gini de 0.60 vs 0.70 parece pequeno, mas pode representar dezenas de milhões em crédito.\n\nF1: balanço entre não perder fraudes (recall — sensibilidade) e não bloquear boas transações (precision — especificidade). Em fraude, recall alto é prioritário; em crédito, precision importa mais.\n\nLift: 'se eu abordar os top 10% do modelo, quantas vezes mais churn evito do que abordando aleatoriamente?' Um lift de 3× significa que o modelo é 3 vezes mais eficiente que random.\n\nComo traduzir: os 15-60% de melhoria relativa que a NeoSpace cita são em AUROC/Gini. Para quantificar: melhoria de AUROC × volume de decisões × valor médio por decisão = impacto em R$.",
+      kaggle:"No dataset de fraude, veja os resultados de baseline publicados pela comunidade (leaderboard Kaggle). Observe a diferença entre AUROC 0.85 e 0.92. Calcule: se o banco tem 10.000 transações fraudulentas/mês a R$500 cada, e o modelo com AUROC 0.85 captura 70% delas, quanto a mais um modelo com AUROC 0.92 (capturando 83%) representa por mês?",
+      kaggle_url:"https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud",
+      saida:"Tabela de tradução: métrica técnica → significado em negócio → cálculo de impacto em R$ por setor"
+    },
+    {
+      id:"6b", type:"material",
+      title:"Template de business case",
+      desc:"Custo do pipeline atual vs. LDM. Como construir o ROI.",
+      teoria:"Estrutura do business case:\n\n(1) Custo atual\n• Salários de data scientists para manutenção de features e modelos (ex: 4 FTEs × R$15k/mês = R$720k/ano)\n• Infraestrutura de feature store e modelo serving\n• Custo de oportunidade: tempo de reação a mudanças de mercado (semanas/meses)\n• Performance perdida por modelos desatualizados (em Gini × R$)\n\n(2) Investimento LDM\n• Licença NeoSpace (solicitar proposta)\n• Custo de integração e setup (estimativa)\n• Tempo de ramp-up (4-8 semanas para primeiros resultados)\n\n(3) Retorno projetado\n• Redução de custo de manutenção (liberar time para projetos novos)\n• Ganho de performance em decisões × volume × valor médio\n• Aceleração de time-to-market para novos modelos\n\nReferência: NeoSpace cita 2× mais precisão, 400% mais rápido para treinar.",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"Template de business case preenchido com números hipotéticos de um banco médio brasileiro (R$ reais)"
+    },
+    {
+      id:"6c", type:"discovery",
+      title:"FAQ de objeções",
+      desc:"As 10 objeções mais comuns e como responder com confiança.",
+      teoria:"(1) 'Nossos dados são sensíveis' → SOC 2, GDPR, LGPD compliance. Opção de on-premise deployment. Os dados nunca saem do ambiente do cliente.\n\n(2) 'Quanto tempo para ter valor?' → Pre-train em semanas. Primeiros modelos preditivos em 4-8 semanas. ROI mensurável em 90 dias.\n\n(3) 'Como integra com nosso stack?' → NeoData conecta com qualquer warehouse (Snowflake, BigQuery, Redshift, Databricks), data lake e API. Sem big bang.\n\n(4) 'O modelo é caixa preta, o regulador não aceita' → O prescriptive output é um action object estruturado e auditável. Os guardrails são explícitos no código.\n\n(5) 'Já investimos em feature store' → Coexistência no início. O LDM roda em paralelo, prova valor, e a migração é gradual.\n\n(6) 'Não temos dados suficientes' → Quanto histórico vocês têm? 6 meses já é suficiente para pre-training inicial.\n\n(7) 'Nosso time técnico não vai aceitar' → O LDM não substitui o time — libera o time de manutenção para trabalho de maior valor.\n\n(8) 'Como sabemos que funciona para o nosso setor?' → Perguntar sobre casos similares ao setor do cliente.\n\n(9) 'O custo é muito alto' → Qual é o custo de não fazer? Calcular o custo de manutenção atual + performance perdida.\n\n(10) 'Precisamos de um piloto primeiro' → Ótimo — qual seria o caso de uso ideal para provar valor?",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"FAQ de 10 objeções com respostas em linguagem de negócio — formato de cartão para uso em reuniões"
+    }
+  ]
+},
+{
+  id:7, color:"c-d7", label:"Dia 7",
+  title:"Simulação e consolidação",
+  desc:"Tudo junto em um mock de discovery completo. Seu portfólio para a entrevista.",
+  modules:[
+    {
+      id:"7a", type:"pratica",
+      title:"Mock discovery: cliente fintech",
+      desc:"Simulação completa: dor → diagnóstico → proposta LDM.",
+      teoria:"Cenário: você está em uma reunião com o CDO de um banco médio brasileiro. O banco tem 12 modelos de crédito em produção (por produto, por canal, por segmento), uma equipe de 8 data scientists em que 6 fazem só manutenção, e os modelos perderam ~8 pontos de Gini após o Pix (2023). O banco quer reduzir custo operacional de AI e melhorar performance de crédito ao mesmo tempo.\n\nSua missão: conduzir o discovery completo em 45 minutos, identificar as 3 principais dores, mapear o pipeline atual, e chegar a uma proposta de valor concreta para o LDM.\n\nDicas: use as 10 perguntas do Dia 3. Preste atenção nos números (12 modelos, 8 data scientists, 8 pontos de Gini). Cada número é um argumento. Ao final, proponha um piloto em um único caso de uso.",
+      kaggle:"Use o dataset 'Give Me Some Credit' como base do cliente. Calcule o Gini baseline dos melhores modelos públicos (≈ 0.60-0.65). Simule uma queda de 8 pontos (para 0.52-0.57). Calcule o impacto em R$ assumindo 100k decisões de crédito/mês, ticket médio de R$8.000, e PD média de 3% — quantas inadimplências adicionais isso representa?",
+      kaggle_url:"https://www.kaggle.com/c/GiveMeSomeCredit",
+      saida:"Mock de discovery documentado: contexto, dores mapeadas, pipeline atual, proposta LDM, próximos passos (3-4 páginas)"
+    },
+    {
+      id:"7b", type:"pratica",
+      title:"One-pager de posicionamento",
+      desc:"O LDM em 5 minutos. Seu cheat sheet para qualquer situação.",
+      teoria:"Estrutura do one-pager:\n\n(1) O problema que o mercado tem (2 linhas): 'Empresas investem enormes recursos em feature engineering e modelos especializados que ficam defasados e são caros de manter.'\n\n(2) O que o LDM é (1 frase): 'Um modelo unificado treinado diretamente nos dados brutos da empresa, que aprende a tomar decisões otimizadas sem feature engineering manual.'\n\n(3) Como funciona (3 bullets não-técnicos): aprende padrões diretamente do histórico bruto de eventos; unifica todos os casos de uso em um modelo; gera ações individualizadas, não scores que precisam de interpretação.\n\n(4) Quando usar: empresa com histórico rico de eventos, vários modelos em produção, alto custo de manutenção de features.\n\n(5) Quando NÃO usar: empresa sem dados históricos estruturados, problema muito específico e estável, regulatório muito restritivo a modelos complexos.\n\n(6) Evidências: 15-60% de melhoria relativa em 12+ tarefas, 400% mais rápido para treinar, 2× mais preciso.",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"One-pager finalizado em PDF/Markdown — pronto para usar em entrevista, onboarding ou reunião de cliente"
+    },
+    {
+      id:"7c", type:"material",
+      title:"Gaps → plano semana 2",
+      desc:"O que aprofundar se tiver tempo ou necessidade.",
+      teoria:"Possíveis gaps para semana 2, ordenados por prioridade para o seu papel:\n\n(1) Competidores: o que Databricks (MLflow + Feature Store), Google Vertex AI, AWS SageMaker, e startups como H2O.ai e DataRobot oferecem. Como o LDM se diferencia.\n\n(2) Arquitetura técnica avançada: aprofundar os 5 blocos para conversas com CTOs e arquitetos. Quando eles fazem perguntas difíceis de implementação.\n\n(3) Domínio específico: se o foco for saúde, energia ou seguros, estudar o vocabulário e os dados típicos do setor.\n\n(4) Integração e deployment: como o NeoData funciona na prática, o que é o inference server, como funciona o continuous learning.\n\n(5) Casos de sucesso: pesquisar cases publicados pela NeoSpace e construir narrativas de referência por setor.",
+      kaggle:null,
+      kaggle_url:null,
+      saida:"Lista priorizada de gaps + plano de estudo para semana 2 (o que estudar, por quê, em quanto tempo)"
+    }
+  ]
+}
+];
+
+const state = { activeDay: 1, activeMod: null, doneDays: new Set(), doneMods: new Set() };
+
+function init() {
+  renderNav();
+  renderMain();
+}
+
+function renderNav() {
+  const nav = document.getElementById('day-nav');
+  nav.innerHTML = DAYS.map(d => `
+    <div class="nav-item${d.id === state.activeDay ? ' active' : ''}" onclick="selectDay(${d.id})">
+      <span class="nav-day-pill ${d.color}">${d.label}</span>
+      <span class="nav-day-text">${d.title}</span>
+      <i class="ti ti-check nav-check${state.doneDays.has(d.id) ? ' visible' : ''}"></i>
+    </div>
+  `).join('');
+
+  const done = state.doneDays.size;
+  const pct = Math.round(done / 7 * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = done + ' / 7';
+}
+
+function renderMain() {
+  const day = DAYS.find(d => d.id === state.activeDay);
+  const activeMod = state.activeMod ? day.modules.find(m => m.id === state.activeMod) : null;
+
+  const modsHtml = day.modules.map(m => {
+    const isActive = state.activeMod === m.id;
+    const isDone = state.doneMods.has(m.id);
+    return `
+      <div class="mod-card${isActive ? ' active' : ''}${isDone ? ' done' : ''}" onclick="toggleMod('${m.id}')">
+        <div class="mod-card-top">
+          <span class="mod-type-badge type-${m.type}">${m.type}</span>
+          <i class="ti ti-check mod-done-icon${isDone ? ' visible' : ''}"></i>
+        </div>
+        <div class="mod-title">${m.title}</div>
+        <div class="mod-desc">${m.desc}</div>
+        ${m.kaggle_url ? `<div class="mod-kaggle-tag"><i class="ti ti-database" style="font-size:11px"></i> Kaggle</div>` : ''}
+      </div>`;
+  }).join('');
+
+  let detailHtml = '';
+  if (activeMod) {
+    const isDone = state.doneMods.has(activeMod.id);
+    const teoriaFormatted = activeMod.teoria.replace(/\n/g, '<br>');
+    const kaggleFormatted = activeMod.kaggle ? activeMod.kaggle.replace(/\n/g, '<br>') : null;
+    detailHtml = `
+      <div class="detail-panel">
+        <div class="detail-top">
+          <div class="detail-title">${activeMod.title}</div>
+          <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="detail-sections">
+          <div>
+            <div class="detail-sec-label">Conceito</div>
+            <div class="detail-body">${teoriaFormatted}</div>
+          </div>
+          ${kaggleFormatted ? `
+          <div>
+            <div class="detail-sec-label">Exercício prático — Kaggle</div>
+            <div class="kaggle-block">
+              <div class="kaggle-block-header">
+                <span class="kaggle-badge">dataset</span>
+                <a href="${activeMod.kaggle_url}" target="_blank" class="kaggle-link-btn">
+                  <i class="ti ti-external-link" style="font-size:12px"></i> Abrir no Kaggle
+                </a>
+              </div>
+              <div class="detail-body">${kaggleFormatted}</div>
+            </div>
+          </div>` : (activeMod.kaggle_url ? `
+          <div>
+            <div class="detail-sec-label">Leitura recomendada</div>
+            <a href="${activeMod.kaggle_url}" target="_blank" class="kaggle-link-btn" style="margin-top:0">
+              <i class="ti ti-external-link" style="font-size:12px"></i> Abrir recurso
+            </a>
+          </div>` : '')}
+          ${activeMod.saida ? `
+          <div>
+            <div class="deliverable-block">
+              <i class="ti ti-package"></i>
+              <div class="deliverable-text"><strong style="color:var(--amber)">Entregável:</strong> ${activeMod.saida}</div>
+            </div>
+          </div>` : ''}
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="window.open('${activeMod.kaggle_url || '#'}','_blank')">
+            <i class="ti ti-player-play" style="font-size:13px"></i> Explorar exercício
+          </button>
+          <button class="btn" onclick="copyPrompt('${activeMod.id}')">
+            <i class="ti ti-copy" style="font-size:13px"></i> Copiar prompt para Claude
+          </button>
+          <button class="btn${isDone ? ' btn-success' : ''}" onclick="toggleModDone('${activeMod.id}')">
+            <i class="ti ti-${isDone ? 'check' : 'circle-check'}" style="font-size:13px"></i>
+            ${isDone ? 'Concluído' : 'Marcar como concluído'}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  const isDayDone = state.doneDays.has(day.id);
+  document.getElementById('main-content').innerHTML = `
+    <div class="day-header">
+      <span class="day-number-badge ${day.color}">${day.label}</span>
+      <div class="day-header-text">
+        <div class="day-header-title">${day.title}</div>
+        <div class="day-header-desc">${day.desc}</div>
+      </div>
+    </div>
+    <div class="modules-grid">${modsHtml}</div>
+    ${detailHtml}
+    <div class="day-footer">
+      <div class="footer-deliverables">
+        <i class="ti ti-package" style="font-size:14px"></i>
+        ${day.modules.filter(m=>m.saida).length} entregáveis neste dia
+      </div>
+      <button class="mark-day-btn${isDayDone ? ' done' : ''}" onclick="toggleDay(${day.id})">
+        <i class="ti ti-${isDayDone ? 'check' : 'circle-check'}" style="font-size:14px"></i>
+        ${isDayDone ? 'Dia concluído' : 'Marcar dia como concluído'}
+      </button>
+    </div>`;
+}
+
+function selectDay(id) {
+  state.activeDay = id;
+  state.activeMod = null;
+  renderNav();
+  renderMain();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleMod(id) {
+  state.activeMod = state.activeMod === id ? null : id;
+  renderMain();
+}
+
+function closeDetail() {
+  state.activeMod = null;
+  renderMain();
+}
+
+function toggleModDone(id) {
+  state.doneMods.has(id) ? state.doneMods.delete(id) : state.doneMods.add(id);
+  renderMain();
+}
+
+function toggleDay(id) {
+  state.doneDays.has(id) ? state.doneDays.delete(id) : state.doneDays.add(id);
+  renderNav();
+  renderMain();
+}
+
+function copyPrompt(modId) {
+  const day = DAYS.find(d => d.modules.some(m => m.id === modId));
+  const mod = day.modules.find(m => m.id === modId);
+  const prompt = `Me ajuda com o módulo "${mod.title}" da LDM Academy.\n\nConceito a estudar: ${mod.teoria.substring(0, 200)}...\n\nQuero gerar o entregável: ${mod.saida}`;
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.querySelector('[onclick="copyPrompt(\'' + modId + '\')"]');
+    if (btn) { btn.innerHTML = '<i class="ti ti-check" style="font-size:13px"></i> Copiado!'; setTimeout(() => renderMain(), 1500); }
+  }).catch(() => alert('Copie manualmente:\n\n' + prompt));
+}
+
+init();
+</script>
+</body>
+</html>
