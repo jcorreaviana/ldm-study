@@ -3,6 +3,47 @@
 Implementação passo a passo de um transformer para detecção de fraude bancária com dados sintéticos.
 Objetivo: entender o fluxo completo — não resolver fraude em produção.
 
+## Arquitetura
+
+O diagrama interativo está em [`docs/architecture.dc.html`](docs/architecture.dc.html) (abra no browser).
+
+Quatro frames cobrem o projeto inteiro:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  01 · ML PIPELINE — raw event → fraud score                        │
+│                                                                     │
+│  [RAW EVENT] → [Field Encoders] → [Local Fusion] → [Pos. Encoding] │
+│                                        ↓                            │
+│               [Multi-Head Attention] → [FF + Norm] → [Classifier]  │
+│                                                         score=0.918 │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  02 · TRANSFORMER INTERNALS — uma encoder layer                    │
+│                                                                     │
+│  X[batch,10,32] → Q/K/V (dₖ=8) → 4 heads → concat → Wo           │
+│               → Add & LayerNorm (skip ↺)                           │
+│               → FF Linear(32→64)·ReLU·Linear(64→32)               │
+│               → Add & LayerNorm (skip ↺)   × N_LAYERS=2           │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  03 · REPO STRUCTURE — módulos e dependências                      │
+│                                                                     │
+│  config.py → todos                                                  │
+│  08_classifier → 07 → 06, 05, 04, 03, 02                          │
+│  09_train_eval → 01_tokenizer + 08_classifier                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  04 · TRAIN & EVAL — Transformer vs XGBoost                        │
+│                                                                     │
+│  Path A: FraudClassifier · vê a SEQUÊNCIA                          │
+│  Path B: XGBoost · vê só AGREGADOS (10 features/cliente)           │
+│                                                                     │
+│  Caso onde a ordem importa: XGBoost=0.31 NORMAL ✗                  │
+│                             Transformer=0.87 FRAUD ✓               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ## Setup
 
 ```bash
@@ -49,6 +90,7 @@ python src/09_train_and_eval.py
 | `src/07_transformer.py` | Backbone completo (N camadas empilhadas) |
 | `src/08_classifier.py` | Score de fraude via sigmoid no último token |
 | `src/09_train_and_eval.py` | Treino + comparação Transformer vs XGBoost |
+| `docs/architecture.dc.html` | Diagrama interativo de arquitetura (4 frames) |
 
 ## Conceitos implementados
 
@@ -67,7 +109,9 @@ python src/09_train_and_eval.py
 | Parâmetro | Valor | Descrição |
 |-----------|-------|-----------|
 | `D_MODEL` | 32 | Dimensão dos embeddings |
-| `N_HEADS` | 4 | Cabeças de atenção |
+| `N_HEADS` | 4 | Cabeças de atenção (dₖ = 8 por cabeça) |
 | `N_LAYERS` | 2 | Camadas do transformer |
+| `D_FF` | 64 | Dimensão interna do feed-forward |
 | `SEQ_LEN` | 10 | Tamanho da sequência (padding/truncate) |
 | `EPOCHS` | 30 | Épocas de treino |
+| params | 24,897 | Total de parâmetros treináveis |
