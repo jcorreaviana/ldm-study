@@ -44,6 +44,18 @@ Quatro frames cobrem o projeto inteiro:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+### Pipeline de Fraudes
+![pipeline de fraudes](docs/01-fraud-pipeline.png)
+
+### Camadada de Encoding
+![encoding](docs/02-encode-layer.png)
+
+### Estrutura do Repositório
+![estrutura repo](docs/03-repo-structure.png)
+
+### Fluxo de Treino e Avaliação
+![traing & eval flow](docs/04-training_eval-flow.png)
+
 ## Setup
 
 ```bash
