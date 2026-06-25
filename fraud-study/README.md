@@ -127,3 +127,8 @@ python src/09_train_and_eval.py
 | `SEQ_LEN` | 10 | Tamanho da sequência (padding/truncate) |
 | `EPOCHS` | 30 | Épocas de treino |
 | params | 24,897 | Total de parâmetros treináveis |
+
+## Materiais de apoio
+
+- Slides/Resumo dos estudos [`estudos-ldm`](docs/estudos-ldm.pdf)
+- Material Estudo [`estudos-ldm`](docs/aula-ldm.pdf)
