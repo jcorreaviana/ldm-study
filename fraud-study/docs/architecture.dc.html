@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(27,29,34,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(27,29,34,0.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+</style>
+</helmet>
+
+<!-- ════════════════ FRAME 1 — ML PIPELINE ════════════════ -->
+<div style="position:absolute; left:0px; top:0px; width:1980px;">
+  <div data-drags-parent="1" style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.14em; color:#6b7079; margin-bottom:12px; cursor:grab;">
+    <span style="font-weight:600; color:#3f6196;">01</span><span style="color:#c9ced4;">/</span><span>ML PIPELINE — RAW EVENT → FRAUD SCORE</span>
+  </div>
+  <div data-screen-label="Frame 1 — ML Pipeline" class="grid-bg" style="background:#ffffff; border:1px solid #d8dce1; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:38px 40px 44px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px;">
+      <div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:30px; font-weight:700; color:#1b1d22; letter-spacing:-0.01em;">End-to-end fraud pipeline</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#6b7079; margin-top:6px;">One transaction event → dense token → temporal backbone → sigmoid score</div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6b7079; text-align:right; border:1px solid #e3a99c; background:#f7ece9; border-radius:2px; padding:8px 12px;">
+        <div style="color:#b1503f; font-weight:600; letter-spacing:0.08em;">ANCHOR CASE</div>
+        <div style="margin-top:3px;">client_id = 5 · fraude = 1</div>
+      </div>
+    </div>
+
+    <!-- raw event card -->
+    <div style="display:flex; align-items:stretch; gap:0;">
+      <div style="flex:0 0 250px; border:1px solid #c9ced4; border-radius:2px; background:#f6f7f8; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#6b7079; margin-bottom:10px;">RAW EVENT · pos 6</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.85; color:#1b1d22;">
+          <div>tipo&nbsp;&nbsp; = <span style="color:#b1503f;">troca_senha</span></div>
+          <div>pais&nbsp;&nbsp; = <span style="color:#b1503f;">JP</span></div>
+          <div>device = <span style="color:#b1503f;">desconhecido</span></div>
+          <div>valor&nbsp; = 0.0</div>
+          <div>hora&nbsp;&nbsp; = <span style="color:#b1503f;">3</span></div>
+        </div>
+      </div>
+
+      <!-- arrow -->
+      <div style="flex:0 0 56px; display:flex; align-items:center; justify-content:center;">
+        <div style="display:flex; align-items:center;"><div style="width:30px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div>
+      </div>
+
+      <!-- block 1 field encoders -->
+      <div style="flex:1 1 0; min-width:0; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 1 · src/02</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:12px;">Field encoders</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.5; color:#3a3e45; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; gap:8px;"><span>tipo</span><span style="color:#6b7079;">Emb(7,32)→[32]</span></div>
+          <div style="display:flex; justify-content:space-between; gap:8px;"><span>pais</span><span style="color:#6b7079;">Emb(6,32)→[32]</span></div>
+          <div style="display:flex; justify-content:space-between; gap:8px;"><span>device</span><span style="color:#6b7079;">Emb(4,32)→[32]</span></div>
+          <div style="display:flex; justify-content:space-between; gap:8px;"><span>valor</span><span style="color:#6b7079;">Linear(1,32)→[32]</span></div>
+          <div style="display:flex; justify-content:space-between; gap:8px;"><span>hora</span><span style="color:#6b7079;">Linear(1,32)→[32]</span></div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 56px; display:flex; align-items:center; justify-content:center;">
+        <div style="display:flex; align-items:center;"><div style="width:30px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div>
+      </div>
+
+      <!-- block 2 local fusion -->
+      <div style="flex:1 1 0; min-width:0; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 2 · src/03</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:12px;">Local fusion</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.7; color:#3a3e45;">
+          <div>concat(5×[32])</div>
+          <div style="color:#6b7079;">&nbsp;&nbsp;→ [160]</div>
+          <div>Linear(160,32)</div>
+          <div>ReLU + LayerNorm</div>
+          <div style="margin-top:8px; color:#3f6196;">→ token [32]</div>
+        </div>
+        <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6b7079; border-top:1px dashed #d8dce1; padding-top:8px;">‖fused‖ = 5.83 &gt; any field</div>
+      </div>
+
+      <div style="flex:0 0 56px; display:flex; align-items:center; justify-content:center;">
+        <div style="display:flex; align-items:center;"><div style="width:30px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div>
+      </div>
+
+      <!-- block 3 positional -->
+      <div style="flex:1 1 0; min-width:0; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 3 · src/04</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:12px;">Positional encoding</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.7; color:#3a3e45;">
+          <div>token[32]</div>
+          <div>+ PE(pos=6)</div>
+          <div style="color:#6b7079;">sinusoidal</div>
+          <div style="margin-top:8px; color:#3f6196;">→ [32] + order</div>
+        </div>
+        <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6b7079; border-top:1px dashed #d8dce1; padding-top:8px;">"the 6th event in the stream"</div>
+      </div>
+    </div>
+
+    <!-- down connector -->
+    <div style="display:flex; justify-content:center; margin:6px 0;">
+      <div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:22px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div>
+    </div>
+
+    <div style="display:flex; align-items:stretch; gap:0;">
+      <!-- block 4 attention -->
+      <div style="flex:1 1 0; min-width:0; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 4 · src/05 + src/06</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:6px;">Multi-head attention · 4 heads</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-bottom:12px;">softmax(QKᵀ/√dₖ)·V&nbsp;&nbsp;then concat → Wo → [32]</div>
+        <!-- attention bars: event 9 over positions -->
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3a3e45;">
+          <div style="color:#6b7079; margin-bottom:7px;">attention weights · event 9 → all positions</div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div style="display:flex; align-items:center; gap:8px;"><span style="flex:0 0 96px;">p6 troca_senha</span><div style="flex:1; height:11px; background:#eef2f8;"><div style="width:62%; height:100%; background:#b1503f;"></div></div><span style="flex:0 0 38px; text-align:right;">0.31</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="flex:0 0 96px;">p7 cmp_negada</span><div style="flex:1; height:11px; background:#eef2f8;"><div style="width:56%; height:100%; background:#c87a6a;"></div></div><span style="flex:0 0 38px; text-align:right;">0.28</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="flex:0 0 96px;">p8 compra JP</span><div style="flex:1; height:11px; background:#eef2f8;"><div style="width:44%; height:100%; background:#c87a6a;"></div></div><span style="flex:0 0 38px; text-align:right;">0.22</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="flex:0 0 96px;">p9 transfer JP</span><div style="flex:1; height:11px; background:#eef2f8;"><div style="width:28%; height:100%; background:#3f6196;"></div></div><span style="flex:0 0 38px; text-align:right;">0.14</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="flex:0 0 96px; color:#9aa0a8;">p0–5 / pad</span><div style="flex:1; height:11px; background:#eef2f8;"><div style="width:5%; height:100%; background:#c9ced4;"></div></div><span style="flex:0 0 38px; text-align:right; color:#9aa0a8;">0.05</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 56px; display:flex; align-items:center; justify-content:center;">
+        <div style="display:flex; align-items:center;"><div style="width:30px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div>
+      </div>
+
+      <!-- block 5 FF + norm -->
+      <div style="flex:0 0 300px; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 5 · src/07</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:12px;">Feed-forward + norm</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.8; color:#3a3e45;">
+          <div>Add &amp; LayerNorm</div>
+          <div>Linear(32→64)·ReLU</div>
+          <div>Linear(64→32)</div>
+          <div>Add &amp; LayerNorm</div>
+          <div style="margin-top:8px; color:#6b7079;">× N_LAYERS = 2</div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 56px; display:flex; align-items:center; justify-content:center;">
+        <div style="display:flex; align-items:center;"><div style="width:30px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div>
+      </div>
+
+      <!-- block 6 classifier -->
+      <div style="flex:0 0 320px; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:14px 16px; display:flex; flex-direction:column;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:4px;">BLOCK 6 · src/08</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:15px; font-weight:600; color:#1b1d22; margin-bottom:12px;">Classifier head</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.7; color:#3a3e45;">
+          <div>last token output[-1] → [32]</div>
+          <div>z = w·x + b&nbsp;&nbsp;<span style="color:#6b7079;">= 2.41</span></div>
+          <div>score = σ(z)</div>
+        </div>
+        <div style="margin-top:auto; padding-top:14px;">
+          <div style="border:1px solid #e3a99c; background:#f7ece9; border-radius:2px; padding:10px 12px; display:flex; align-items:baseline; justify-content:space-between;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#b1503f; letter-spacing:0.06em;">SCORE</span>
+            <span style="font-family:'IBM Plex Sans',sans-serif; font-weight:700; font-size:26px; color:#b1503f;">0.918</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#b1503f; text-align:right; margin-top:6px;">→ FRAUD DETECTED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer params -->
+    <div style="display:flex; gap:28px; flex-wrap:wrap; margin-top:28px; padding-top:18px; border-top:1px solid #e3e6ea; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">
+      <span>D_MODEL <span style="color:#1b1d22;">32</span></span>
+      <span>N_HEADS <span style="color:#1b1d22;">4</span></span>
+      <span>N_LAYERS <span style="color:#1b1d22;">2</span></span>
+      <span>D_FF <span style="color:#1b1d22;">64</span></span>
+      <span>SEQ_LEN <span style="color:#1b1d22;">10</span></span>
+      <span>params <span style="color:#1b1d22;">24,897</span></span>
+      <span style="color:#9aa0a8;">runs on CPU</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ FRAME 2 — TRANSFORMER INTERNALS ════════════════ -->
+<div style="position:absolute; left:2060px; top:0px; width:1080px;">
+  <div data-drags-parent="1" style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.14em; color:#6b7079; margin-bottom:12px; cursor:grab;">
+    <span style="font-weight:600; color:#3f6196;">02</span><span style="color:#c9ced4;">/</span><span>TRANSFORMER INTERNALS — ONE ENCODER LAYER</span>
+  </div>
+  <div data-screen-label="Frame 2 — Transformer Internals" class="grid-bg" style="background:#ffffff; border:1px solid #d8dce1; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:38px 40px 44px;">
+
+    <div style="font-family:'IBM Plex Sans',sans-serif; font-size:30px; font-weight:700; color:#1b1d22; letter-spacing:-0.01em;">Inside the encoder layer</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#6b7079; margin-top:6px; margin-bottom:28px;">Scaled dot-product attention · multi-head · residual + LayerNorm · ×2</div>
+
+    <!-- input -->
+    <div style="border:1px dashed #c9ced4; border-radius:2px; background:#f6f7f8; padding:11px 14px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#3a3e45;">
+      input X &nbsp;<span style="color:#6b7079;">[batch, seq_len=10, D_MODEL=32]</span>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:5px 0;"><div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:18px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div></div>
+
+    <!-- QKV -->
+    <div style="display:flex; gap:12px;">
+      <div style="flex:1; border:1px solid #c9ced4; border-radius:2px; padding:10px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">Q<div style="font-size:10px; color:#6b7079; margin-top:3px;">Linear→dₖ=8</div></div>
+      <div style="flex:1; border:1px solid #c9ced4; border-radius:2px; padding:10px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">K<div style="font-size:10px; color:#6b7079; margin-top:3px;">Linear→dₖ=8</div></div>
+      <div style="flex:1; border:1px solid #c9ced4; border-radius:2px; padding:10px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">V<div style="font-size:10px; color:#6b7079; margin-top:3px;">Linear→dₖ=8</div></div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:5px 0;"><div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:18px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div></div>
+
+    <!-- 4 heads -->
+    <div style="border:1px solid #c9ced4; border-radius:2px; padding:16px; background:#fff;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#3f6196; margin-bottom:14px;">N_HEADS = 4 · INDEPENDENT ATTENTION · event 9 (transfer JP)</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="border:1px solid #e3e6ea; border-radius:2px; padding:11px 13px;">
+          <div style="font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:#1b1d22;">Head 1 · temporal</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:6px;">peak p6=0.38 · p7=0.31</div>
+        </div>
+        <div style="border:1px solid #e3e6ea; border-radius:2px; padding:11px 13px;">
+          <div style="font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:#1b1d22;">Head 2 · geographic</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:6px;">peak p6=0.44 · p8=0.29</div>
+        </div>
+        <div style="border:1px solid #e3e6ea; border-radius:2px; padding:11px 13px;">
+          <div style="font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:#1b1d22;">Head 3 · value</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:6px;">peak p8=0.41 · p9=0.33</div>
+        </div>
+        <div style="border:1px solid #e3e6ea; border-radius:2px; padding:11px 13px;">
+          <div style="font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:#1b1d22;">Head 4 · device</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:6px;">peak p6=0.35 · p7=0.30</div>
+        </div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:14px; text-align:center;">concat(head₁…head₄) → Linear Wo(32,32) → [32]</div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:5px 0;"><div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:18px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div></div>
+
+    <!-- add & norm 1 -->
+    <div style="display:flex; align-items:center; gap:12px; border:1px solid #c9ced4; border-radius:2px; padding:11px 14px; background:#f6f7f8;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22; flex:1;">Add &amp; LayerNorm <span style="color:#6b7079;">— residual: x + Attention(x)</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3f6196; border:1px solid #b9c8de; border-radius:2px; padding:3px 7px;">skip ↺</span>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:5px 0;"><div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:18px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div></div>
+
+    <!-- FF -->
+    <div style="border:1px solid #c9ced4; border-radius:2px; padding:11px 14px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">
+      Feed-forward &nbsp;<span style="color:#6b7079;">Linear(32→64) · ReLU · Linear(64→32) · Dropout 0.1</span>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:5px 0;"><div style="display:flex; flex-direction:column; align-items:center;"><div style="width:1.5px; height:18px; background:#3f6196;"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #3f6196;"></div></div></div>
+
+    <!-- add & norm 2 -->
+    <div style="display:flex; align-items:center; gap:12px; border:1px solid #c9ced4; border-radius:2px; padding:11px 14px; background:#f6f7f8;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22; flex:1;">Add &amp; LayerNorm <span style="color:#6b7079;">— residual: x + FF(x)</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3f6196; border:1px solid #b9c8de; border-radius:2px; padding:3px 7px;">skip ↺</span>
+    </div>
+
+    <!-- stack annotation -->
+    <div style="margin-top:24px; display:flex; align-items:center; gap:14px; border-top:1px dashed #d8dce1; padding-top:18px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:34px; font-weight:600; color:#3f6196;">×2</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6b7079; line-height:1.6;">layers stacked (N_LAYERS).<br>output [batch, 10, 32] → classifier head.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ FRAME 3 — REPO STRUCTURE ════════════════ -->
+<div style="position:absolute; left:0px; top:960px; width:1080px;">
+  <div data-drags-parent="1" style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.14em; color:#6b7079; margin-bottom:12px; cursor:grab;">
+    <span style="font-weight:600; color:#3f6196;">03</span><span style="color:#c9ced4;">/</span><span>REPO STRUCTURE — MODULES &amp; DEPENDENCIES</span>
+  </div>
+  <div data-screen-label="Frame 3 — Repo Structure" class="grid-bg" style="background:#ffffff; border:1px solid #d8dce1; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:38px 40px 44px;">
+
+    <div style="font-family:'IBM Plex Sans',sans-serif; font-size:30px; font-weight:700; color:#1b1d22; letter-spacing:-0.01em;">fraud-study/</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#6b7079; margin-top:6px; margin-bottom:28px;">Each src/NN script runs standalone &amp; prints explanatory output · 09 imports the others</div>
+
+    <div style="display:flex; gap:30px;">
+      <!-- file tree -->
+      <div style="flex:0 0 320px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:2.0; color:#3a3e45;">
+        <div><span style="color:#6b7079;">├─</span> config.py</div>
+        <div><span style="color:#6b7079;">├─</span> requirements.txt</div>
+        <div><span style="color:#6b7079;">├─</span> data/</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">└─</span> generate_data.py</div>
+        <div style="padding-left:18px; color:#9aa0a8;">&nbsp;&nbsp;&nbsp;transactions.csv</div>
+        <div><span style="color:#6b7079;">├─</span> src/</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 00_overview.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 01_tokenizer.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 02_embeddings.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 03_local_fusion.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 04_positional.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 05_attention.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 06_multihead.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 07_transformer.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">├</span> 08_classifier.py</div>
+        <div style="padding-left:18px;"><span style="color:#6b7079;">└</span> 09_train_and_eval.py</div>
+        <div><span style="color:#6b7079;">└─</span> outputs/</div>
+      </div>
+
+      <!-- module roles -->
+      <div style="flex:1 1 0; display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#3f6196;">config.py</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">constants · SEED=42 · fixed vocabularies</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#3f6196;">generate_data</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">200 clients · ~1,847 events · 60 fraud (30%)</span></div>
+        <div style="height:1px; background:#e3e6ea; margin:4px 0;"></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">00_overview</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">ASCII map of the full flow</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">01_tokenizer</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">CSV → X[200,10,5], y, masks</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">02_embeddings</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">FieldEncoders → dense [32]</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">03_local_fusion</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">concat + Linear → 1 token</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">04_positional</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">sinusoidal position encoding</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">05_attention</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">single-head Q/K/V + softmax</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">06_multihead</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">4 parallel heads</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">07_transformer</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">FraudTransformer backbone (N layers)</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">08_classifier</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">last token → Linear → sigmoid</span></div>
+        <div style="display:flex; gap:12px; align-items:baseline;"><span style="flex:0 0 130px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#b1503f;">09_train_eval</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b7079;">train + Transformer vs XGBoost</span></div>
+
+        <!-- import graph -->
+        <div style="margin-top:16px; border:1px solid #c9ced4; border-radius:2px; background:#f6f7f8; padding:14px 16px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; color:#3f6196; margin-bottom:10px;">IMPORT GRAPH</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#3a3e45; line-height:1.9;">
+            <div>config.py &nbsp;<span style="color:#6b7079;">→ imported by all</span></div>
+            <div>08_classifier &nbsp;<span style="color:#6b7079;">→</span>&nbsp; 07 → 06,05,04,03,02</div>
+            <div>09_train_eval &nbsp;<span style="color:#6b7079;">→</span>&nbsp; 01_tokenizer + 08_classifier</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ FRAME 4 — TRAIN & EVAL ════════════════ -->
+<div style="position:absolute; left:1140px; top:1240px; width:2000px;">
+  <div data-drags-parent="1" style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.14em; color:#6b7079; margin-bottom:12px; cursor:grab;">
+    <span style="font-weight:600; color:#3f6196;">04</span><span style="color:#c9ced4;">/</span><span>TRAIN &amp; EVAL — TRANSFORMER vs XGBOOST</span>
+  </div>
+  <div data-screen-label="Frame 4 — Train & Eval" class="grid-bg" style="background:#ffffff; border:1px solid #d8dce1; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:38px 40px 44px;">
+
+    <div style="font-family:'IBM Plex Sans',sans-serif; font-size:30px; font-weight:700; color:#1b1d22; letter-spacing:-0.01em;">Training &amp; evaluation flow</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#6b7079; margin-top:6px; margin-bottom:28px;">src/09 · sequence model vs aggregated-feature baseline · why order matters</div>
+
+    <!-- flow row -->
+    <div style="display:flex; align-items:stretch; gap:0; margin-bottom:30px;">
+      <div style="flex:0 0 190px; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:13px 15px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3f6196; margin-bottom:5px;">STEP 1</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:14px; font-weight:600; color:#1b1d22;">Load + tokenize</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:7px;">80/20 stratified split<br>160 train · 40 test</div>
+      </div>
+
+      <div style="flex:0 0 44px; display:flex; align-items:center; justify-content:center;"><div style="display:flex; align-items:center;"><div style="width:22px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div></div>
+
+      <!-- branch -->
+      <div style="flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:14px;">
+        <!-- transformer path -->
+        <div style="border:1px solid #b9c8de; border-radius:2px; background:#eef2f8; padding:13px 15px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:14px; font-weight:600; color:#1b1d22;">Path A · Transformer (LDM)</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3f6196;">sees the SEQUENCE</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3a3e45; margin-top:8px;">FraudClassifier · Adam lr=0.001 · weighted BCELoss · 30 epochs · batch 32</div>
+        </div>
+        <!-- xgb path -->
+        <div style="border:1px solid #c9ced4; border-radius:2px; background:#f6f7f8; padding:13px 15px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:14px; font-weight:600; color:#1b1d22;">Path B · XGBoost (classic)</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6b7079;">sees only AGGREGATES</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3a3e45; margin-top:8px;">10 features/client: n_troca_senha · n_compra_negada · n_pais_estrangeiro · n_device_desc · valor_medio · valor_max · hora_media · n_madrugada · n_fase_critica · n_eventos</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:6px;">100 trees · depth 4 · lr 0.1 · scale_pos_weight</div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 44px; display:flex; align-items:center; justify-content:center;"><div style="display:flex; align-items:center;"><div style="width:22px; height:1.5px; background:#3f6196;"></div><div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #3f6196;"></div></div></div>
+
+      <div style="flex:0 0 190px; border:1px solid #c9ced4; border-radius:2px; background:#fff; padding:13px 15px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#3f6196; margin-bottom:5px;">STEP 3</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-size:14px; font-weight:600; color:#1b1d22;">Evaluate</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079; margin-top:7px;">AUROC · AUPRC<br>Prec · Rec · F1<br>confusion matrix</div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:28px; align-items:stretch;">
+      <!-- results table -->
+      <div style="flex:1 1 0; min-width:0;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; color:#3f6196; margin-bottom:12px;">RESULTS · populated at runtime (SEED=42)</div>
+        <div style="border:1px solid #c9ced4; border-radius:2px; overflow:hidden;">
+          <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr; background:#f6f7f8; border-bottom:1px solid #c9ced4; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079;">
+            <div style="padding:9px 12px;">Model</div><div style="padding:9px 8px; text-align:right;">AUROC</div><div style="padding:9px 8px; text-align:right;">AUPRC</div><div style="padding:9px 8px; text-align:right;">Prec</div><div style="padding:9px 8px; text-align:right;">Rec</div><div style="padding:9px 8px; text-align:right;">F1</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr; border-bottom:1px solid #e3e6ea; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#3a3e45;">
+            <div style="padding:11px 12px;">XGBoost (classic)</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr; background:#eef2f8; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1b1d22;">
+            <div style="padding:11px 12px; color:#3f6196;">Transformer (LDM)</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div><div style="padding:11px 8px; text-align:right; color:#9aa0a8;">0.XXX</div>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9aa0a8; margin-top:8px;">Run <span style="color:#6b7079;">python src/09_train_and_eval.py</span> to fill the table.</div>
+      </div>
+
+      <!-- divergent case -->
+      <div style="flex:0 0 600px; border:1px solid #e3a99c; border-radius:2px; background:#f7ece9; padding:16px 18px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; color:#b1503f; margin-bottom:10px;">WHERE ORDER MATTERS · client 12 (fraude=1)</div>
+        <div style="display:flex; gap:14px; margin-bottom:12px;">
+          <div style="flex:1; background:#fff; border:1px solid #e3d2cd; border-radius:2px; padding:11px 13px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b7079;">XGBoost</div>
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:22px; font-weight:700; color:#6b7079;">0.31 <span style="font-size:12px; font-weight:500;">NORMAL ✗</span></div>
+          </div>
+          <div style="flex:1; background:#fff; border:1px solid #e3a99c; border-radius:2px; padding:11px 13px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#b1503f;">Transformer</div>
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:22px; font-weight:700; color:#b1503f;">0.87 <span style="font-size:12px; font-weight:500;">FRAUD ✓</span></div>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#3a3e45; line-height:1.65;">troca_senha at event 3, then a normal purchase. The aggregate counts look benign, so XGBoost misses it — but the transformer put <span style="color:#b1503f;">42% attention on event 3</span> and caught the temporal pattern.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
