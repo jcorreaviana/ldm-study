@@ -66,4 +66,4 @@ Este material apoia o estudo da biblioteca [micrograd](https://github.com/karpat
 
 ---
 
-> **Nota:** Todos os recursos acima são gratuitos e em português (Brasil).
+> **Nota:** Todos os recursos acima são gratuitos e em português (Brasil).˜
