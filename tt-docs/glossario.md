@@ -53,6 +53,28 @@ Sequência de eventos de um cliente ordenada por tempo. Base do LDM — ao invé
 
 ---
 
+## Funções de Perda
+
+**MSE (Mean Squared Error)**
+L = (1/n) · Σ(y_prev - y_real)². Função de perda para regressão. Penaliza erros proporcionalmente. Quanto menor, melhor.
+
+**Cross-Entropy Loss**
+Função de perda para classificação. Penaliza erros de confiança de forma exponencial via logaritmo. Quanto mais confiante o modelo e mais errado, maior a penalidade.
+
+**Binary Cross-Entropy (BCE)**
+Variação da cross-entropy para classificação binária (0 ou 1): L = -[y × log(score) + (1-y) × log(1-score)]. Usada para fraude, churn, spam.
+
+**Categorical Cross-Entropy**
+Variação para classificação com N classes. Usada em LLMs para prever o próximo token entre 50.000+ palavras: L = -Σ yᵢ × log(pᵢ).
+
+**Convergência**
+Momento em que a perda para de cair significativamente entre épocas — o modelo encontrou um mínimo. Identificada visualmente por um platô na curva de perda.
+
+**Platô**
+Região da curva de perda onde ela para de diminuir. Indica que o modelo convergiu ou está preso num mínimo local.
+
+---
+
 ## Treinamento
 
 **Forward pass**
@@ -100,14 +122,27 @@ Inicialização de pesos calibrada pela profundidade da rede: escala = √(2/n_e
 **Symmetry breaking**
 Inicializar pesos com valores aleatórios diferentes entre neurônios. Sem isso, todos os neurônios aprendem a mesma coisa.
 
-**AdamW**
-Otimizador adaptativo que ajusta o learning rate individualmente por parâmetro. Combina momentum (m) e variância (v) dos gradientes. Padrão em LLMs modernos.
+---
+
+## Técnicas de Learning Rate
 
 **Warmup**
 Estratégia de aumentar o learning rate gradualmente no início do treinamento. Evita instabilidade quando os parâmetros ainda são aleatórios.
 
 **Cooldown**
 Estratégia de diminuir o learning rate gradualmente no final do treinamento. Permite afinar os parâmetros com precisão perto do mínimo.
+
+**Cosine Annealing**
+Scheduler que diminui o learning rate seguindo uma curva de cosseno: começa alto, cai suavemente, chega próximo a zero. Padrão em transformers e LLMs.
+
+**ReduceLROnPlateau**
+Reduz o learning rate automaticamente quando a perda para de melhorar por N épocas. Equivalente ao Early Stopping, mas para o lr.
+
+**Scheduler de learning rate**
+Estratégia para variar o lr ao longo do treinamento. Evita passos grandes perto do mínimo e reduz custo computacional.
+
+**AdamW**
+Otimizador adaptativo que ajusta o learning rate individualmente por parâmetro. Combina momentum (m) e variância (v) dos gradientes com weight decay correto. Padrão em LLMs modernos.
 
 ---
 
@@ -131,9 +166,6 @@ Transforma um vetor de scores em probabilidades que somam 1: eˣⁱ / Σeˣʲ. U
 ---
 
 ## Avaliação
-
-**MSE (Mean Squared Error)**
-L = (1/n) · Σ(y_prev - y_real)². Função de perda para regressão. Quanto menor, melhor.
 
 **R² (coeficiente de determinação)**
 Mede quanto da variação real o modelo explica: R² = 1 - SS_res/SS_tot. R²=1 perfeito, R²=0 equivale a prever sempre a média.
@@ -172,6 +204,9 @@ Camada de neurônios entre a entrada e a saída. Cada camada aprende uma represe
 **Parâmetros treináveis**
 Pesos (W) e vieses (b) ajustados pelo gradiente descendente durante o treinamento. Não confundir com hiperparâmetros (learning rate, n_camadas).
 
+**Feed-forward layer**
+Duas camadas densas com relu no meio aplicadas a cada token independentemente: d_model → 4×d_model → d_model. Processa e transforma a informação combinada pela atenção.
+
 **Residual connection**
 Conexão que soma a entrada de uma camada com sua saída: saída = transformação(entrada) + entrada. Resolve vanishing gradient. Base do transformer.
 
@@ -200,6 +235,9 @@ Q = o que o token procura. K = o que cada token oferece. V = conteúdo real do t
 **Multi-head attention**
 N cabeças de atenção em paralelo, cada uma com seus próprios Wq, Wk, Wv. Cada cabeça aprende um aspecto diferente — a especialização emerge do treinamento.
 
+**Bloco transformer**
+Unidade repetida N vezes: [Multi-Head Attention + Residual + LayerNorm] + [Feed-Forward + Residual + LayerNorm]. Entrada e saída sempre com mesma dimensão d_model.
+
 **LDM (Large Data Model)**
 Transformer treinado diretamente no event stream bruto — sem feature engineering manual. Unifica múltiplos modelos especializados num único modelo.
 
@@ -209,8 +247,61 @@ Limitação do pipeline clássico: médias apagam picos comportamentais crítico
 **Knowledge imprinting**
 Bias humano embutido nas features do pipeline clássico. O modelo confirma hipóteses existentes ao invés de descobrir padrões novos.
 
+**TabNet**
+Transformer para dados tabulares estáticos. Usa atenção sobre features. Proxy do LDM para datasets sem sequência temporal.
+
+---
+
+## Fine-tuning e Adaptação de Modelos
+
+**Pré-treino (pre-training)**
+Treinamento inicial do modelo em grande volume de dados sem labels. Aprende representações gerais. Feito uma vez, caro — tratado como ativo estratégico.
+
 **Fine-tuning**
 Ajuste fino de um modelo pré-treinado para uma tarefa específica. Mais rápido e preciso que treinar do zero.
 
-**TabNet**
-Transformer para dados tabulares estáticos. Usa atenção sobre features. Proxy do LDM para datasets sem sequência temporal.
+**LoRA (Low-Rank Adaptation)**
+Técnica de fine-tuning eficiente que congela os pesos originais e adiciona matrizes pequenas treináveis: W_novo = W_original + A × B. Reduz em até 99% os parâmetros treináveis.
+
+**Rank (LoRA)**
+Dimensão interna das matrizes A e B do LoRA. Rank baixo (1-4) = menos parâmetros, mais rápido. Rank alto (64+) = mais expressivo, mais caro. Sweet spot típico: 4-16.
+
+**QLoRA (Quantized LoRA)**
+Evolução do LoRA que comprime o modelo base de float16 para int4 (4x menos memória), mantendo A e B em float16. Permite fine-tuning de modelos grandes em GPUs consumer.
+
+**Modelo base (frozen weights)**
+Pesos do modelo pré-treinado congelados durante o fine-tuning. No QLoRA comprimidos para int4. Representam o conhecimento geral do pré-treino.
+
+**Adaptação (A × B)**
+Matrizes treináveis do LoRA que representam a diferença entre o modelo geral e o especializado. Ficam em float16 para manter precisão no treinamento.
+
+**Data drift catastrófico**
+Mudança estrutural no comportamento dos dados que invalida o modelo base. Ex: chegada do Pix mudando os padrões de transação. Pode justificar retreinar do zero.
+
+**Retreino do zero**
+Necessário quando: pré-treino ruim, mudança estrutural do domínio, drift catastrófico, viés sistemático ou arquitetura inadequada. Custo muito maior que fine-tuning.
+
+**RLHF (Reinforcement Learning from Human Feedback)**
+Técnica de fine-tuning que usa feedback humano para alinhar o modelo com preferências e valores. Usada no GPT-4, Claude e outros LLMs modernos.
+
+---
+
+## Variantes do Transformer
+
+**BERT (Bidirectional Encoder Representations from Transformers)**
+Transformer encoder-only treinado para preencher tokens mascarados: "o gato [MASK] o peixe" → "comeu". Lê a sequência nos dois sentidos simultaneamente. Ideal para compreensão de texto: classificação, extração de entidades, similaridade semântica.
+
+**GPT (Generative Pre-trained Transformer)**
+Transformer decoder-only treinado para prever o próximo token da esquerda para a direita. Ideal para geração de texto: completar, escrever, conversar. Base do ChatGPT e Claude.
+
+**Masked Language Model (MLM)**
+Objetivo de treinamento do BERT. Mascara tokens aleatórios da sequência e treina o modelo para prevê-los usando o contexto dos dois lados. Força o modelo a entender o contexto bidirecional.
+
+**Encoder-only**
+Arquitetura transformer que processa a sequência inteira de uma vez nos dois sentidos. Ex: BERT. Bom para tarefas de compreensão.
+
+**Decoder-only**
+Arquitetura transformer que processa tokens da esquerda para a direita, um por vez. Ex: GPT, Claude, Llama. Bom para geração de texto.
+
+**Encoder-Decoder**
+Arquitetura transformer com dois componentes: encoder processa a entrada, decoder gera a saída. Ex: T5, BART. Bom para tradução e resumo.

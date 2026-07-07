@@ -46,6 +46,7 @@
 - Multiplicação de matrizes e dimensões
 - Regra de compatibilidade: colunas de A = linhas de B
 - Vetor linha vs vetor coluna
+- Transposta de matriz
 
 ---
 
@@ -137,7 +138,6 @@
 
 ### 3.4 Rede Neural com Múltiplas Camadas ✅
 - Entrada de cada camada = saída da camada anterior
-- Lista de camadas: camadas_W, camadas_b
 - Forward pass percorre camadas em sequência
 - Backward pass percorre de trás para frente
 - Contagem de parâmetros com L camadas: N(F+1) + (L-1)·N(N+1) + N+1
@@ -163,78 +163,67 @@
 - saída = transformação(entrada) + entrada
 - Caminho direto para o gradiente
 - Resolve vanishing gradient
-- Origem: ResNet (2015)
 
 ### 4.2 Layer Normalization ✅
 - z-score aplicado nas ativações: x' = (x - μ) / σ
 - Mantém gradientes em escala controlada entre camadas
-- Diferença para Batch Normalization
 
 ### 4.3 Bloco Residual ✅
 - [Layer Norm → Dense → ReLU] + conexão residual
-- Estrutura base do transformer
 - Comparativo: rede densa vs rede residual
 
 ---
 
-## MÓDULO 5 — Transformer 🔄
+## MÓDULO 5 — Transformer ✅
 
 ### 5.1 Embeddings 📄
 - Representação de tokens como vetores densos
-- One-hot encoding vs embedding
-- Espaço vetorial semântico
-- Propriedades: rei - homem + mulher ≈ rainha
-- Embedding como parâmetro treinável
 - Tokens similares ficam próximos no espaço vetorial
 
 ### 5.2 Tokenização 📄
 - O que é um token (palavra em NLP, evento no LDM)
-- Vocabulário e índices
-- Relação entre tokens e embeddings
 - Contexto máximo (context window)
 
 ### 5.3 Positional Encoding 📄
 - Por que posição importa em sequências
-- Como representar a posição de cada token
-- Encoding senoidal vs aprendido
-- Sem positional encoding o transformer trata sequência como saco desordenado
+- Sem positional encoding o transformer trata sequência como desordenada
 
-### 5.4 Mecanismo de Atenção 📄
+### 5.4 Mecanismo de Atenção ✅
 - Query, Key, Value (Q, K, V)
-- Q = o que o token procura | K = o que cada token oferece | V = conteúdo real
-- Attention score: softmax(QKᵀ / √d)
-- Self-attention: cada token olha para todos os outros
-- Por que divide por √d (escala para estabilidade)
-- Analogia: busca no Google (Q=busca, K=títulos, V=conteúdo das páginas)
+- scores = Q · Kᵀ / √d_k
+- Softmax: eˣ / Σeˣ → probabilidades que somam 1
+- saída = softmax(scores) · V
+- Pipeline completo: pré-processamento → token → Q/K/V → atenção → saída enriquecida
+- Transposta: linhas viram colunas
+- Por que dividir por √d (estabilidade dos gradientes)
 
-### 5.5 Multi-Head Attention 📄
-- Múltiplas cabeças de atenção em paralelo
-- Cada cabeça aprende um tipo de relação diferente
-- Concatenação e projeção das cabeças
+### 5.5 Multi-Head Attention ✅
+- Múltiplas cabeças em paralelo
+- Cada cabeça aprende um aspecto diferente
+- A responsabilidade de cada cabeça emerge do treinamento
 
-### 5.6 Arquitetura Completa do Transformer ⬜
-- Encoder: processa a entrada
-- Decoder: gera a saída
-- Encoder-only (BERT), Decoder-only (GPT), Encoder-Decoder (T5)
-- Feed-forward layers dentro de cada bloco
-- Estrutura completa: Embedding → N × [Attention + FFN + Residual + LayerNorm] → saída
+### 5.6 Arquitetura Completa do Transformer ✅
+- Bloco: [Multi-Head Attention + Residual + LayerNorm] + [Feed-Forward + Residual + LayerNorm]
+- Feed-forward: d_model → 4×d_model → d_model
+- N blocos empilhados — entrada e saída sempre [n_tokens × d_model]
+- Sigmoid na saída para classificação binária
+- Implementado do zero e com PyTorch (com treinamento completo)
 
 ---
 
-## MÓDULO 6 — LLMs e Aplicações 🔄
+## MÓDULO 6 — LLMs e Aplicações ✅
 
-### 6.1 Pré-treinamento 📄
-- Objetivo: aprender representações gerais sem labels
-- Pre-train → Fine-tune → Prescriptive (ciclo de valor LDM)
-- Cross-entropy loss ⬜
-- Escala: dados, parâmetros, computação ⬜
-- Scaling Laws ⬜
+### 6.1 Funções de Perda para Classificação ✅
+- Cross-entropy: penaliza erros de confiança exponencialmente
+- Binary Cross-Entropy (BCE): L = -[y·log(score) + (1-y)·log(1-score)]
+- Categorical Cross-Entropy: usada em LLMs para prever próximo token
+- Ciclo: forward → BCE → gradiente → atualiza pesos
 
-### 6.2 Fine-tuning 📄
-- Ajuste fino para domínios específicos
-- Fine-tune acelera e melhora aprendizado usando conhecimento do pré-treino
-- LoRA e QLoRA — fine-tuning eficiente ⬜
-- RLHF — ajuste por feedback humano ⬜
+### 6.2 Fine-tuning Eficiente ✅
+- LoRA: W_novo = W_original (congelado) + A × B (treinável)
+- Rank: dimensão interna de A e B — sweet spot 4-16
+- QLoRA: comprime W_original de float16 → int4, mantém A×B em float16
+- Quando retreinar do zero: pré-treino ruim, drift catastrófico, mudança estrutural
 
 ### 6.3 Inferência e Hardware ✅
 - VRAM e capacidade de parâmetros
@@ -245,9 +234,8 @@
 ### 6.4 Pipeline Clássico vs LDM 📄
 - Feature engineering manual → event stream bruto
 - Um modelo por tarefa → modelo unificado
-- Feature store e seus problemas (rigidez temporal, mean tyranny)
-- Arquitetura LDM: 5 blocos (Field Encoders, Local Fusion, Temporal Backbone, Spatial Backbone, Latent-State Processor)
-- TabNet como proxy do LDM para dados tabulares estáticos
+- Arquitetura LDM: 5 blocos
+- Ciclo de valor: pre-train → fine-tune → prescriptive
 
 ---
 
@@ -258,36 +246,42 @@ tt-docs/
 │
 ├── math-examples/
 │   └── regressao/
-│       ├── regressao_do_zero.py              →  regressão linear sem biblioteca (v1)
-│       ├── regressao_do_zero_v2.py           →  com early stopping e R² (v2)
-│       ├── regressao_multiplas_features.py   →  múltiplas features com z-score
-│       ├── regressao_visual.py               →  versão com micrograd e gráfico PNG
-│       ├── comparativo_zero_vs_micrograd.py  →  micrograd vs implementação manual
-│       ├── regressao_altura_peso.png         →  gráfico da reta aprendida
-│       └── paisagem_perda.png                →  paisagem L(a,b) e caminho do gradiente
+│       ├── regressao_do_zero.py
+│       ├── regressao_do_zero_v2.py
+│       ├── regressao_multiplas_features.py
+│       ├── regressao_visual.py
+│       └── comparativo_zero_vs_micrograd.py
 │
 ├── rna/
-│   ├── relu_comparativo.py                   →  relu na saída vs camada oculta
-│   ├── rede_neural_3_neuronios.py            →  1 camada oculta com 3 neurônios
-│   ├── rede_neural_leaky_relu.py             →  relu vs leaky relu comparativo
-│   └── rede_neural_multicamadas.py           →  N camadas configurável, He init, clipping
+│   ├── relu_comparativo.py
+│   ├── rede_neural_3_neuronios.py
+│   ├── rede_neural_leaky_relu.py
+│   └── rede_neural_multicamadas.py
 │
 ├── transformer/
-│   └── transformer_vs_densa.py               →  blocos residuais vs rede densa
+│   ├── transformer_vs_densa.py
+│   ├── mecanismo_atencao.py
+│   ├── pipeline_completo.py
+│   ├── transformer_completo.py
+│   └── transformer_treinamento.py
 │
-├── README.md                                 →  guia completo com conceitos e código
-├── resumo_sessao.md                          →  resumo matemático das sessões
-├── indice_estudos.md                         →  este arquivo
-└── materiais_complementares.md               →  links de estudo em português
+├── pseudocodigos/
+│   └── pseudocodigos.md
+│
+├── README.md
+├── resumo_sessao.md
+├── indice_estudos.md
+├── glossario.md
+└── materiais_complementares.md
 ```
 
 ---
 
 ## Referências
 
-- [micrograd — Andrej Karpathy](https://github.com/karpathy/micrograd) — autodiferenciação minimalista
-- [Attention Is All You Need](https://arxiv.org/abs/1706.03762) — paper original do transformer
-- [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — visualização do transformer
+- [micrograd — Andrej Karpathy](https://github.com/karpathy/micrograd)
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
 - [3Blue1Brown — Essence of Calculus](https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr)
 - [3Blue1Brown — Neural Networks](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 - [Poli-USP — Álgebra Linear](https://www.youtube.com/playlist?list=PLO3hBdfBc4pFef1zn1oZyYXLomL9MiX-C)
