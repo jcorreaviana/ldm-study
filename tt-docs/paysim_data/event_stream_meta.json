@@ -1,0 +1,15 @@
+{
+  "janela": 13,
+  "tipos": [
+    "CASH_IN",
+    "CASH_OUT",
+    "DEBIT",
+    "PAYMENT",
+    "TRANSFER"
+  ],
+  "n_amostras": 2260844,
+  "n_positivas": 2704,
+  "taxa_positiva": 0.001196013524152927,
+  "entidade_sequencia": "nameDest",
+  "corte_sem_vazamento": true
+}

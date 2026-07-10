@@ -1,0 +1,124 @@
+{
+  "tabular": {
+    "colunas_numericas": [
+      "amount",
+      "oldbalanceOrg",
+      "newbalanceOrig",
+      "oldbalanceDest",
+      "newbalanceDest",
+      "erroBalanceOrig",
+      "erroBalanceDest",
+      "n_tx_anteriores",
+      "soma_valor_anterior",
+      "max_valor_anterior",
+      "soma_valor_janela_curta",
+      "n_tx_janela_curta"
+    ],
+    "colunas_binarias": [
+      "sinal_estruturacao"
+    ],
+    "scaler_zscore": {
+      "amount": {
+        "media": 318114.9861094529,
+        "std": 900041.3960258743
+      },
+      "oldbalanceOrg": {
+        "media": 47752.30458491443,
+        "std": 256518.06741596098
+      },
+      "newbalanceOrig": {
+        "media": 16145.460022922485,
+        "std": 156506.53283925616
+      },
+      "oldbalanceDest": {
+        "media": 1707792.0324516397,
+        "std": 4289666.469274932
+      },
+      "newbalanceDest": {
+        "media": 2054481.2782959302,
+        "std": 4750948.978541212
+      },
+      "erroBalanceOrig": {
+        "media": -286508.1415474609,
+        "std": 887650.9230139726
+      },
+      "erroBalanceDest": {
+        "media": -28574.259734838004,
+        "std": 602722.8993929398
+      },
+      "n_tx_anteriores": {
+        "media": 5.286813413853136,
+        "std": 5.999413200218854
+      },
+      "soma_valor_anterior": {
+        "media": 1686451.8932469296,
+        "std": 3628927.253406513
+      },
+      "max_valor_anterior": {
+        "media": 616568.4887764266,
+        "std": 1383894.9583360495
+      },
+      "soma_valor_janela_curta": {
+        "media": 1070690.802337063,
+        "std": 2634702.184598488
+      },
+      "n_tx_janela_curta": {
+        "media": 3.301892586335437,
+        "std": 2.3803865055777673
+      }
+    },
+    "vocabulario_tipo": [
+      "CASH_IN",
+      "CASH_OUT",
+      "DEBIT",
+      "PAYMENT",
+      "TRANSFER"
+    ],
+    "split": "por nameDest, 70/15/15",
+    "n_treino": 1940889,
+    "n_val": 415069,
+    "n_teste": 414451,
+    "n_sinalizadas_estruturacao": 156,
+    "class_weight_sugerido": {
+      "0": 1.0,
+      "1": 168.65999025934494
+    }
+  },
+  "event_stream": {
+    "janela": 13,
+    "tipos": [
+      "CASH_IN",
+      "CASH_OUT",
+      "DEBIT",
+      "PAYMENT",
+      "TRANSFER"
+    ],
+    "entidade_sequencia": "nameDest",
+    "corte_sem_vazamento": true,
+    "split_seed": 42,
+    "scaler_zscore": {
+      "amount": {
+        "media": 318312.64347228967,
+        "std": 895488.8762871306
+      },
+      "oldbalanceDest": {
+        "media": 1706581.73529151,
+        "std": 4239386.286224953
+      },
+      "newbalanceDest": {
+        "media": 2054142.6613347302,
+        "std": 4694461.401312001
+      },
+      "delta_step": {
+        "media": 30.21218114597819,
+        "std": 51.6032739460789
+      }
+    },
+    "n_treino": 1581300,
+    "n_val": 338052,
+    "n_teste": 341492,
+    "n_positivas_treino": 1866,
+    "n_positivas_val": 435,
+    "n_positivas_teste": 403
+  }
+}

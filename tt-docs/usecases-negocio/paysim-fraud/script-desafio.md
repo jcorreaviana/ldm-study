@@ -1,313 +1,261 @@
-# Script do Desafio — Detecção de Fraude com Event Stream (PaySim)
-> Segundo projeto prático — evolução do credit card fraud para LDM com sequência temporal real.
-> Dataset: PaySim Mobile Money (Kaggle — ntnu-testimon/paysim1)
-> Diferencial: tem clienteID → permite montar event stream por cliente → transformer sequencial real
-
----
-
-## Contexto de Negócio (simular com o cliente)
-
-**Cliente simulado:** operadora de mobile money africana expandindo para o Brasil
-
-**Problema:**
-- Fraudes em transferências e saques crescendo 25% ao mês
-- Modelo atual: regras baseadas em valor e tipo de transação
-- Limitação: não considera o histórico sequencial do cliente
-- Dataset: 6.3 milhões de transações com clienteID — event stream disponível
-
-**Diferença fundamental para o projeto anterior:**
-```
-credit card:  sem clienteID → atenção entre features de 1 transação
-PaySim:       com clienteID → sequência de eventos por cliente
-                              → transformer sequencial (LDM de verdade)
-                              → pode detectar padrões que precedem fraude
-```
-
----
-
-## Pré-requisitos — Instalar antes de começar
-
-```bash
-# 1. PyTorch com suporte CUDA (RTX 5090)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-
-# 2. verificar se GPU está ativa
-python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
-# deve retornar: True | NVIDIA GeForce RTX 5090
-
-# 3. bibliotecas de ML
-pip install pandas scikit-learn matplotlib seaborn
-
-# 4. monitoramento de GPU
-pip install nvitop        # monitor em tempo real no terminal
-pip install wandb         # dashboard online com relatórios
-pip install pynvml        # acesso programático às métricas da GPU
-pip install gpustat       # relatório rápido de status da GPU
-
-# 5. baixar dataset
-# kaggle.com/datasets/ntnu-testimon/paysim1
-# arquivo: PS_20174392719_1491204439457_log.csv (~470MB)
-```
-
----
-
-## Ferramentas de Monitoramento de GPU
-
-### Durante o treino — abrir em terminal separado
-
-```bash
-# opção 1: nvidia-smi (já instalado com o driver)
-nvidia-smi dv 1          # atualiza a cada 1 segundo
-
-# opção 2: nvitop (interface visual mais rica)
-nvitop                   # mostra GPU, VRAM, temperatura, processos
-
-# opção 3: gpustat (compacto, bom para logs)
-gpustat --watch 1        # atualiza a cada 1 segundo
-```
-
-### Dentro do código Python — loga durante o treino
-
-```python
-import torch
-import pynvml
-
-# inicializa monitoramento
-pynvml.nvmlInit()
-handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-
-def gpu_stats():
-    mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-    temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-    util = pynvml.nvmlDeviceGetUtilizationRates(handle)
-    power = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000  # watts
-    return {
-        'vram_usada_gb':   mem.used / 1e9,
-        'vram_total_gb':   mem.total / 1e9,
-        'temperatura_c':   temp,
-        'uso_gpu_pct':     util.gpu,
-        'consumo_watts':   power,
-    }
-
-# usar no loop de treino
-for epoca in range(epocas):
-    stats = gpu_stats()
-    print(f"época {epoca} | "
-          f"VRAM {stats['vram_usada_gb']:.1f}/{stats['vram_total_gb']:.0f}GB | "
-          f"temp {stats['temperatura_c']}°C | "
-          f"GPU {stats['uso_gpu_pct']}% | "
-          f"{stats['consumo_watts']:.0f}W")
-```
-
-### wandb — dashboard online com histórico completo
-
-```python
-import wandb
-
-wandb.init(project="paysim-ldm", name="transformer-sequencial-v1")
-
-# loga a cada época
-wandb.log({
-    "loss":           loss.item(),
-    "auprc":          auprc,
-    "recall_fraude":  recall,
-    "vram_gb":        torch.cuda.memory_allocated()/1e9,
-    "temperatura_c":  stats['temperatura_c'],
-    "uso_gpu_pct":    stats['uso_gpu_pct'],
-    "consumo_watts":  stats['consumo_watts'],
-    "epoch":          epoca,
-    "tokens_por_seg": tokens_processados / tempo_epoca,
-})
-
-wandb.finish()
-```
-
-### Parâmetros importantes de observar
-
-```
-temperatura:      ideal < 83°C em carga
-                  acima de 90°C → throttling (GPU reduz clock)
-                  RTX 5090: limite ~90°C
-
-uso da GPU (%):   ideal > 90% durante treino
-                  se baixo → gargalo no CPU ou dataloader
-                  solução: aumentar batch size ou num_workers
-
-VRAM usada:       acompanhar para não estourar 32GB
-                  PaySim com sequências longas pode ser pesado
-                  se estourar → reduzir batch size ou comprimento da sequência
-
-consumo (Watts):  RTX 5090 pode chegar a 575W em carga total
-                  normal para treino intensivo
-
-tokens/segundo:   métrica de throughput do transformer
-                  indica eficiência do pipeline de dados
-```
+# Notas do Desafio — PaySim Mobile Money Fraud Detection
+> Dataset: PaySim (Kaggle — ealaxi/paysim1)
+> Formato: par híbrido — José (negócio + validação) + Claude/Cowork (implementação)
+> Status: ENCERRADO — limitação do dataset identificada, migração para dataset sintético
 
 ---
 
 ## Estrutura do Projeto
 
 ```
-tt-docs/projetos/paysim/
+tt-docs/usecases-negocio/paysim-fraud/
+│
 ├── eda/
-│   ├── EDA_paysim.md
-│   ├── viz_distribuicao_tipos.png
-│   ├── viz_sequencia_cliente.png      ← novo: visualização de event stream
-│   ├── viz_padroes_temporais.png      ← novo: padrões antes da fraude
-│   └── viz_separabilidade.png
+│   ├── EDA_paysim.md              →  análise exploratória completa
+│   ├── analisar_namedest.py       →  censo de sequências por nameDest
+│   └── eda_out/                   →  gráficos gerados
 │
 ├── preprocessing/
-│   ├── preprocess_pipeline.py
-│   ├── montar_event_stream.py         ← novo: agrupa transações por cliente
-│   ├── preprocessing_meta.json
-│   └── limpeza_e_eventstream.md
+│   ├── montar_event_stream.py     →  monta sequências por nameDest + z-score
+│   ├── preprocess_pipeline.py     →  features tabulares + split por conta
+│   └── preprocessing_meta.json   →  estatísticas de normalização
 │
 ├── modelo/
-│   ├── transformer_sequencial.py      ← diferente: atenção entre transações
-│   ├── positional_encoding.py         ← novo: posição dos eventos no tempo
-│   └── checkpoint_melhor_modelo.pt
+│   ├── transformer_sequencial.py  →  transformer com atenção entre transações
+│   └── baseline_tabular.py        →  XGBoost com features do remetente
 │
 ├── avaliacao/
-│   ├── curva_pr.png
-│   ├── matriz_confusao.png
-│   ├── resultado_final.md
-│   └── gpu_report.md                  ← novo: relatório de uso da GPU
+│   ├── resultado_baseline.md      →  AUPRC 0.9972 (XGBoost)
+│   └── resultado_final.md         →  comparativo transformer vs baseline
 │
-├── gpu_monitoring/
-│   ├── wandb_config.py                ← configuração do dashboard
-│   ├── gpu_logger.py                  ← logger de métricas da GPU
-│   └── relatorio_gpu.png              ← gráficos de temperatura, VRAM, uso
-│
+├── troubleshooting_paysim.md      →  8 problemas documentados
 └── README.md
 ```
 
 ---
 
-## Passo a Passo do Projeto
+## Contexto de Negócio
 
-### FASE 1 — Contexto de Negócio
-```
-[ ]  simular reunião com cliente (você apresenta o problema)
-[ ]  identificar o problema central e impacto financeiro
-[ ]  definir critérios de sucesso (recall, FPR, threshold)
-[ ]  identificar diferença fundamental para o projeto anterior
-     (event stream vs tabular)
-```
+**Cliente simulado:** operadora de mobile money com fraudes crescendo 180% em 3 meses
 
-### FASE 2 — EDA
-```
-[ ]  distribuição de tipos de transação (CASH_IN, CASH_OUT, TRANSFER...)
-[ ]  desbalanceamento (fraude é ~0.13%)
-[ ]  visualizar sequência de eventos de um cliente específico
-     → quantas transações tem um cliente em média?
-     → qual o padrão antes de uma fraude?
-[ ]  padrão temporal: fraudes concentradas em algum horário?
-[ ]  análise de valor por tipo de transação
-[ ]  K-Means nos clientes fraudadores — tipos de fraude
-[ ]  decidir comprimento da janela de contexto (últimas N transações)
-```
+**Problema:** modelo atual bloqueia transações acima de R$10.000. Fraudadores fazem transferências menores para driblar o limite (card testing).
 
-### FASE 3 — Pré-processamento
+**Dataset:** PaySim — 6.3 milhões de transações sintéticas de mobile money africano.
+
+---
+
+## Caso de Uso — Score: 8.5/10
+
+**Data:** 10/07/2026
+
+### Pontos fortes
 ```
-[ ]  remover duplicatas
-[ ]  montar event stream por cliente
-     → ordenar transações por tempo para cada clienteID
-     → criar sequências de comprimento fixo (ex: últimas 10 transações)
-     → padding para clientes com menos transações
-[ ]  encoding dos tipos de transação (one-hot ou embedding)
-[ ]  z-score nos valores numéricos (amount, saldo antes/depois)
-[ ]  positional encoding para posição na sequência
-[ ]  split estratificado por cliente (não por transação)
-     → evita que o mesmo cliente esteja em treino e teste
-[ ]  class_weight para desbalanceamento
+✓  quantificou impacto financeiro (180% de crescimento = modelo inviável)
+✓  identificou card testing como padrão sequencial
+✓  justificou clienteID como diferencial da arquitetura
+✓  conectou event stream com LDM de forma natural
+✓  shadow mode e gradual rollout mencionados organicamente
+✓  label por posição escolhido corretamente (tempo real vs estático)
 ```
 
-### FASE 4 — Configurar Monitoramento de GPU
+### Oportunidades de melhoria
 ```
-[ ]  abrir nvitop em terminal separado
-[ ]  configurar wandb (criar conta gratuita em wandb.ai)
-[ ]  inicializar gpu_logger.py no código
-[ ]  testar: rodar 1 época e verificar se métricas aparecem no dashboard
-```
-
-### FASE 5 — Arquitetura do Transformer Sequencial
-```
-[ ]  decisão: quantos eventos na sequência de contexto?
-[ ]  embedding de tipo de transação (CASH_OUT, TRANSFER...)
-[ ]  positional encoding (posição no tempo)
-[ ]  N blocos de encoder com self-attention entre eventos
-     → diferente do projeto anterior (era atenção entre features)
-     → agora é atenção entre transações do mesmo cliente
-[ ]  token [CLS] para classificação
-[ ]  sigmoid na saída → score de fraude
-[ ]  ativar CUDA: model.to('cuda')
-```
-
-### FASE 6 — Treino com GPU
-```
-[ ]  monitorar temperatura (manter < 83°C)
-[ ]  monitorar VRAM (não estourar 32GB)
-[ ]  early stopping por AUPRC de validação
-[ ]  salvar checkpoints
-[ ]  comparar tempo por época vs projeto anterior no CPU
-[ ]  gerar relatório de GPU no wandb
-```
-
-### FASE 7 — Avaliação
-```
-[ ]  AUPRC no conjunto de validação
-[ ]  definir threshold com cliente
-[ ]  recall no tipo de fraude mais custoso
-[ ]  avaliar no teste (uma única vez)
-[ ]  comparativo: modelo anterior (tabular) vs este (sequencial)
-[ ]  demonstrar: o modelo detecta card testing antes da fraude?
-```
-
-### FASE 8 — Relatório de GPU
-```
-[ ]  exportar dashboard do wandb
-[ ]  temperatura máxima atingida
-[ ]  VRAM utilizada vs disponível
-[ ]  consumo médio em Watts
-[ ]  tokens processados por segundo
-[ ]  comparativo: quanto tempo levaria no CPU?
-[ ]  salvar em avaliacao/gpu_report.md
-```
-
-### FASE 9 — Síntese e Próximos Passos
-```
-[ ]  apresentar resultado ao cliente
-[ ]  comparar com projeto anterior (credit card)
-[ ]  argumentar: por que event stream é melhor?
-[ ]  propor evolução: fine-tuning com LoRA/QLoRA
-[ ]  shadow mode e gradual rollout
-[ ]  atualizar notas do desafio e casos_de_uso.md
+→  acurácia não é métrica adequada para dataset desbalanceado
+→  demorou para nomear "sequencial" como tipo de problema
+→  não mencionou tipo específico de fraude mais custoso logo no início
 ```
 
 ---
 
-## Diferenças Técnicas vs Projeto Anterior
+## EDA — Achados Principais
 
-| Aspecto | Credit Card (anterior) | PaySim (este) |
-|---|---|---|
-| Sequência | sem clienteID | com clienteID |
-| Atenção | entre features | entre transações |
-| Tokens | 1 por feature | 1 por evento/transação |
-| Positional encoding | não necessário | sim (ordem temporal importa) |
-| Padding | não | sim (sequências de tamanho variável) |
-| Split | por transação | por cliente |
-| Hardware | CPU (Cowork) | RTX 5090 (local) |
-| Monitoramento | não | nvitop + wandb + pynvml |
+```
+6.362.620 transações | 8.213 fraudes | 0.129% desbalanceamento (1:774)
+
+tipos com fraude:
+  CASH_OUT:  50.1%  ← únicas com fraude
+  TRANSFER:  49.9%  ← únicas com fraude
+  PAYMENT, CASH_IN, DEBIT: ZERO fraudes
+
+padrão de fraude:
+  TRANSFER que drena 100% do saldo do remetente
+  seguido por CASH_OUT imediato
+  → regra de 1 transação, não padrão sequencial
+```
 
 ---
 
-## Meta do Projeto
+## Decisões Arquiteturais e Suas Justificativas
+
+### nameOrig vs nameDest como âncora
 
 ```
-técnica:   AUPRC > 0.80 (melhor que o projeto anterior: 0.705)
-negócio:   detectar card testing ANTES da fraude principal
-           demonstrar que event stream > features isoladas
-gpu:       treino completo em < 10 minutos na RTX 5090
-relatório: dashboard wandb com histórico completo de GPU
+problema descoberto: nameOrig aparece UMA única vez por cliente
+                     não há histórico sequencial pelo remetente
+
+solução: pivotou para nameDest
+  contas de destino se repetem (até 75 vezes)
+  narrativa: detectar contas laranja/mulas
+  label por posição: cada transação recebida avaliada com histórico anterior
 ```
+
+### Janela de contexto = 13
+
+```
+distribuição de sequências por nameDest:
+  mediana:       3 transações
+  percentil 90:  13 transações
+  percentil 99:  28 transações
+
+decisão: janela=13 cobre 90% das contas
+  sem truncar, com padding para o resto
+  adequado para VRAM de 8.5GB (RTX 5060)
+```
+
+### Split por conta (não por exemplo)
+
+```
+problema detectado: random_split() por exemplo causa data leakage
+  mesma conta em treino E validação
+  AUPRC inflado artificialmente
+
+solução: split por conta
+  campo 'split' salvo no event_stream.npz
+  mesma conta nunca aparece em treino e validação
+```
+
+---
+
+## Troubleshooting — Resumo dos 8 Problemas
+
+| # | Problema | Causa | Solução |
+|---|---|---|---|
+| 1 | PyTorch não instalava | Python 3.14 incompatível | Instalar Python 3.12 |
+| 2 | GPU não reconhecida | RTX 5060 Blackwell precisa CUDA 12.8 | PyTorch 2.11 + cu128 |
+| 3 | perda=nan época 1 | autocast deprecated + loss em fp16 | Mover loss para fora do autocast |
+| 4 | pos_weight overflow | ratio 1:836 → pos_weight=836 explode | Capar em 50 + FocalLoss |
+| 5 | perda=nan persistindo | features sem z-score (valores em milhões) | z-score em amount/balance |
+| 6 | data leakage no split | random_split() por exemplo | Split por conta no .npz |
+| 7 | GPU com 12% utilização | DataLoader sem num_workers | num_workers=4 pin_memory=True |
+| 8 | AUPRC 0.0016 estagnado | features do remetente ausentes | Identificado via baseline |
+
+---
+
+## Resultado Final
+
+### Transformer Sequencial
+```
+AUPRC validação:  0.0016  ← aleatório
+scores fraude:    média 0.0487
+scores legítimo:  média 0.0486
+diferença:        0.0001  ← modelo não discrimina
+causa:            features do remetente ausentes (92% do sinal)
+```
+
+### Baseline XGBoost (resultado real)
+```
+AUPRC validação:  0.9972  ← quase perfeito
+scores fraude:    média 0.9958
+scores legítimo:  média 0.0001
+diferença:        0.9957  ← separação perfeita
+
+top features:
+  erroBalanceOrig:  63.9%
+  newbalanceOrig:   28.1%
+  erroBalanceDest:   3.0%
+  amount:            2.6%
+```
+
+---
+
+## Limitação Fundamental do PaySim
+
+```
+o padrão de fraude do PaySim é uma regra de 1 transação:
+  erroBalanceOrig ≈ 1  →  remetente drena 100% do saldo
+  → fraude detectada com 99.72% de certeza por uma regra simples
+
+não é um padrão sequencial:
+  não requer histórico do cliente
+  não requer atenção entre transações
+  um XGBoost com as features certas resolve trivialmente
+
+conclusão: PaySim não é adequado para demonstrar LDM/transformer sequencial
+```
+
+---
+
+## Lições Aprendidas
+
+### Técnicas
+```
+1. SEMPRE rodar baseline antes do transformer
+   se AUPRC > 0.95 com modelo simples → problema não precisa de transformer
+
+2. features do remetente vs destinatário importam
+   a entidade que ancora o event stream determina quais features estão disponíveis
+   pivotando de nameOrig para nameDest perdemos 92% do sinal
+
+3. z-score é obrigatório antes de nn.Linear
+   valores na casa de milhões → overflow → perda=nan
+   normalizar ANTES de salvar no .npz, não dentro do modelo
+
+4. split por entidade, não por exemplo
+   em dados sequenciais: mesma entidade nunca em treino E validação
+
+5. DataLoader é gargalo comum
+   num_workers=4 + pin_memory=True → GPU de 12% para 19%+
+
+6. autocast + loss: loss FORA do autocast
+   dentro do autocast = fp16 → overflow com pos_weight alto
+```
+
+### De Negócio
+```
+1. o tipo de padrão determina a arquitetura
+   padrão transacional (1 evento) → modelo tabular
+   padrão sequencial (contexto histórico) → transformer/LDM
+
+2. baseline honesto é mais valioso que transformer complexo
+   AUPRC 0.9972 com XGBoost > AUPRC 0.0016 com transformer
+   escolher o modelo certo para o problema, não o mais sofisticado
+
+3. limitação do dataset sintético
+   PaySim simula fraude simples (drenagem de saldo)
+   dados reais têm padrões mais complexos e sequenciais
+   dataset sintético criado especificamente para o problema é mais adequado
+```
+
+---
+
+## Próximo Desafio — Dataset Sintético
+
+**Objetivo:** criar dataset com padrão genuinamente sequencial
+
+**Características necessárias:**
+```
+clienteID que se repete múltiplas vezes
+padrão card testing real:
+  micro-transação 1 (R$1-10) → teste do cartão
+  micro-transação 2 (R$1-10) → confirmação
+  transação grande (R$500+)  → golpe real
+label que exige sequência:
+  1 transação isolada NÃO detecta
+  só o padrão histórico revela a fraude
+comportamento temporal claro:
+  micro-transações ocorrem em janela de 24h antes do golpe
+```
+
+**Vantagem:** controlamos o padrão → sabemos que o transformer vai precisar da sequência para detectar.
+
+---
+
+## Comparativo de Desafios
+
+| Data | Caso | Domínio | Score | AUPRC | Modelo |
+|---|---|---|---|---|---|
+| ~05/07/2026 | Inadimplência Fintech | Financeiro | 7.5/10 | — | conceitual |
+| ~06/07/2026 | Churn Operadora | Telecom | 8.0/10 | — | conceitual |
+| 07/07/2026 | Recomendação Produtos | Varejo | 8.5/10 | — | conceitual |
+| 10/07/2026 | Fraude Credit Card | Financeiro | 8.5/10 | 0.705 | transformer tabular |
+| 10/07/2026 | Fraude PaySim | Financeiro | 8.5/10 | 0.9972 | XGBoost (baseline) |

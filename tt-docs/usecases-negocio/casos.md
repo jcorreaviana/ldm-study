@@ -216,3 +216,47 @@ métricas              ★★★★      ★★★★      ★★★★
 | Ranking / Recomendação | Precision@K, NDCG, Recall@K | taxa de conversão, CTR |
 | Regressão | R², MAE, RMSE | erro médio em unidade de negócio |
 | Sequencial / Temporal | AUROC + gap temporal | antecedência da predição |
+
+---
+
+## Caso 5 — Financeiro: Fraude PaySim (Mobile Money)
+
+**Data:** 10/07/2026
+**Domínio:** financeiro
+**Score:** 8.5 / 10
+**Tipo:** caso de uso conceitual + projeto prático completo
+
+### Contexto
+Operadora de mobile money com fraudes crescendo 180% em 3 meses. Modelo atual bloqueia transações acima de R$10.000. Fraudadores fazem transferências menores para driblar o limite (card testing). Dataset: 6.3M transações com clienteID.
+
+### Pontos Fortes
+```
+✓  quantificou impacto financeiro corretamente (180% = triplicou)
+✓  identificou card testing como padrão sequencial
+✓  justificou clienteID como diferencial vs credit card
+✓  label por posição escolhido corretamente
+✓  shadow mode e gradual rollout mencionados
+```
+
+### Oportunidades de Melhoria
+```
+→  acurácia não serve para dataset desbalanceado — usar AUPRC
+→  demorou para nomear "sequencial" diretamente
+```
+
+### Resultado do Projeto
+```
+transformer sequencial:  AUPRC 0.0016  ← modelo cego (features erradas)
+baseline XGBoost:        AUPRC 0.9972  ← quase perfeito
+
+lição: PaySim tem padrão transacional (1 evento), não sequencial
+       XGBoost com erroBalanceOrig resolve trivialmente
+       transformer não era a ferramenta certa para esse dataset
+```
+
+### Próximo Passo
+```
+dataset sintético com padrão genuinamente sequencial
+onde 1 transação isolada NÃO detecta a fraude
+e o contexto histórico é obrigatório
+```
