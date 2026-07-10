@@ -1,0 +1,33 @@
+{
+  "n_before_dedup": 284807,
+  "n_after_dedup": 283726,
+  "duplicates_removed": 1081,
+  "scaler_amount_mean": 88.32167918714254,
+  "scaler_amount_std": 242.61282838148102,
+  "scaler_time_mean": 94915.87419439298,
+  "scaler_time_std": 47485.40834581805,
+  "class_weight": {
+    "0": 0.5008346908617742,
+    "1": 300.012084592145
+  },
+  "splits": {
+    "train": {
+      "n": 198608,
+      "n_fraud": 331
+    },
+    "val": {
+      "n": 42559,
+      "n_fraud": 71
+    },
+    "test": {
+      "n": 42559,
+      "n_fraud": 71
+    }
+  },
+  "overlap_check": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0,
+    "duplicated_indices_across_splits": 0
+  }
+}
