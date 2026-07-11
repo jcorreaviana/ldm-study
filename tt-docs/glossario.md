@@ -321,3 +321,47 @@ Padrão artificial introduzido na geração de dados sintéticos que não existe
 
 **Ponto cego do modelo**
 Situação específica onde o modelo falha sistematicamente. Ex: baseline XGBoost detecta o golpe com 94.9% de probabilidade mas não detecta as micro-transações (0.3%) — o ponto cego é exatamente a fase útil para prevenção.
+
+---
+
+## Métricas de Ranking e Recomendação
+
+**Precision@K**
+Dos K itens recomendados pelo modelo, quantos o usuário realmente interagiu? Ex: recomendei 10 produtos, cliente comprou 3 → Precision@10 = 30%. Posição não importa.
+
+**Recall@K**
+De tudo que o usuário gostaria, quantos estão nos K recomendados? Mede cobertura da recomendação. Complementar ao Precision@K.
+
+**NDCG (Normalized Discounted Cumulative Gain)**
+Mede se os itens mais relevantes aparecem no topo da lista. Posição importa — item relevante na posição 1 vale mais que na posição 10. Padrão em sistemas de recomendação e ranking.
+
+---
+
+## Conceitos de Treinamento Avançado
+
+**Recall preventivo**
+Métrica de negócio que mede se o modelo levanta alerta ANTES do evento prejudicial acontecer. Ex: no card testing, mede quantas micro-transações precursoras receberam score alto antes do golpe. Diferente do recall clássico que mede detecção do evento em si.
+
+**Label preventivo**
+Label alternativo ao isFraud original que propaga o rótulo para as transações precursoras. Ex: se cliente tem golpe em t3, marca t1 e t2 (micro-transações) também com label=1. Força o modelo a aprender o padrão antes do evento, não só o evento.
+
+**Data leakage**
+Quando informação do conjunto de teste "vaza" para o treino, inflando artificialmente as métricas. Tipos comuns: duplicatas entre conjuntos, split por exemplo em vez de por entidade, normalização calculada no dataset inteiro antes do split.
+
+**Split por entidade**
+Em dados sequenciais (cliente, conta, usuário), o split deve ser feito por entidade — não por transação. A mesma entidade nunca pode aparecer em treino E validação. Evita data leakage via contexto sequencial.
+
+**FT-Transformer (Feature Tokenizer Transformer)**
+Variante do transformer para dados tabulares estáticos. Converte cada feature em um token via projeção linear própria e aplica atenção entre features. Usado no projeto credit-card-fraud onde não havia sequência temporal por cliente.
+
+**pos_weight**
+Parâmetro do BCEWithLogitsLoss que multiplica a loss da classe positiva para compensar desbalanceamento. Ex: pos_weight=50 faz cada erro em fraude pesar 50x mais que erro em legítima. Valores muito altos (>50) causam overflow → usar FocalLoss como alternativa.
+
+**FocalLoss**
+Função de perda alternativa ao BCE para datasets muito desbalanceados. Reduz a contribuição de exemplos fáceis via (1-p_t)^gamma, focando o aprendizado nos exemplos difíceis. Mais estável que pos_weight alto. Parâmetros típicos: alpha=0.25, gamma=2.0.
+
+**autocast (precisão mista)**
+Técnica que combina fp16 no forward pass com fp32 na loss e gradientes. Mais rápido que fp32 puro, mais estável que fp16 puro. Regra: forward dentro do autocast, loss FORA. Sintaxe PyTorch 2.x: `torch.amp.autocast('cuda')`.
+
+**fp16 vs fp32**
+fp16 (half precision): 2 bytes/parâmetro, range ~65.000 → overflow com valores grandes. fp32 (full precision): 4 bytes/parâmetro, range ~3.4×10^38 → mais estável. Em transformers: forward em fp16, loss e gradientes em fp32.
