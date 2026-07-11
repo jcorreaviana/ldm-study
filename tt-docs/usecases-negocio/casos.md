@@ -156,11 +156,17 @@ Varejista online com 15M clientes e 2M produtos. Taxa de conversão das recomend
 | ~05/07/2026 | Inadimplência em Fintech | Financeiro | 7.5 / 10 |
 | ~06/07/2026 | Churn de Operadora | Telecom | 8.0 / 10 |
 | 07/07/2026 | Recomendação de Produtos | Varejo | 8.5 / 10 |
+| 10/07/2026 | Fraude Credit Card (projeto) | Financeiro | 8.5 / 10 |
+| 10/07/2026 | Fraude PaySim (projeto) | Financeiro | 8.5 / 10 |
+| 11/07/2026 | Card Testing Sintético (projeto) | Financeiro | 9.0 / 10 |
 
 ```
-caso 1 — financeiro:   7.5 / 10
-caso 2 — telecom:      8.0 / 10
-caso 3 — varejo:       8.5 / 10
+caso 1 — financeiro:            7.5 / 10
+caso 2 — telecom:                8.0 / 10
+caso 3 — varejo:                 8.5 / 10
+caso 4 — credit card (projeto):  8.5 / 10
+caso 5 — paysim (projeto):       8.5 / 10
+caso 6 — card testing (projeto): 9.0 / 10
 ```
 
 ```
@@ -199,7 +205,8 @@ métricas              ★★★★      ★★★★      ★★★★
 ## Próximos Casos de Uso
 
 ```
-⬜  financeiro 2  →  detecção de fraude em tempo real
+✅  financeiro 2  →  detecção de fraude — coberto pelos projetos práticos
+                     (credit card, PaySim, card testing sintético)
 ⬜  telecom 2     →  upsell e upgrade de plano
 ⬜  varejo 2      →  previsão de demanda / estoque
 ⬜  cross-domain  →  problema misto (ex: fintech + varejo)
@@ -216,6 +223,47 @@ métricas              ★★★★      ★★★★      ★★★★
 | Ranking / Recomendação | Precision@K, NDCG, Recall@K | taxa de conversão, CTR |
 | Regressão | R², MAE, RMSE | erro médio em unidade de negócio |
 | Sequencial / Temporal | AUROC + gap temporal | antecedência da predição |
+
+---
+
+## Caso 4 — Financeiro: Fraude Credit Card (Kaggle)
+
+**Data:** 10/07/2026
+**Domínio:** financeiro
+**Score:** 8.5 / 10
+**Tipo:** caso de uso conceitual + projeto prático completo
+
+### Contexto
+Banco digital brasileiro com 2M de cartões ativos. Chargebacks por fraude subiram 40% nos últimos 6 meses, custo atual de R$8M/mês. Modelo atual usa regras manuais (bloqueia Amount > R$5.000 ou países não autorizados) — bloqueia clientes legítimos e deixa passar fraudes sofisticadas.
+
+### Pontos Fortes
+```
+✓  identificou 3 tipos distintos de fraude e priorizou pelo impacto financeiro
+✓  conectou card testing como precursor de fraude maior
+✓  decisão correta de class_weight (não ajustar por cluster)
+✓  proposta prescritiva (segundo fator vs bloqueio definitivo)
+✓  identificou ambiguidade entre precisão ≥ 95% e 5% FPR
+✓  propôs shadow mode e gradual rollout corretamente
+✓  reconheceu limitação do dataset (sem clienteID → sem event stream)
+```
+
+### Oportunidades de Melhoria
+```
+→  calibrar afirmações técnicas com evidência antes de generalizar
+→  quantificar impacto financeiro mais cedo na análise (não só no final)
+→  nomear métricas formais (Precision@K, AUPRC, FPR) com mais naturalidade
+```
+
+### Resultado do Projeto
+```
+transformer tabular (FT-Transformer): AUPRC validação 0.7971, teste 0.7053
+recall Cluster 1 (77% das fraudes):    86% no teste
+FPR (legítimas bloqueadas):            4.75%
+
+lição: dataset sem clienteID → atenção entre features, não entre transações
+       para LDM real com event stream, migrar para dataset com identificador
+       de cliente (motivou a migração para PaySim)
+```
 
 ---
 
@@ -259,4 +307,45 @@ lição: PaySim tem padrão transacional (1 evento), não sequencial
 dataset sintético com padrão genuinamente sequencial
 onde 1 transação isolada NÃO detecta a fraude
 e o contexto histórico é obrigatório
+```
+
+---
+
+## Caso 6 — Financeiro: Card Testing Sintético
+
+**Data:** 11/07/2026
+**Domínio:** financeiro
+**Score:** 9.0 / 10
+**Tipo:** caso de uso conceitual + projeto prático completo
+
+### Contexto
+PayFlow — fintech de pagamentos digitais com 2M de cartões ativos. Chargebacks por card testing cresceram 340% em 4 meses (~R$1.2M/mês). Modelo atual analisa cada transação isolada e não vê o padrão sequencial: micro-transações (R$1-5) seguidas de um golpe (R$500-2000). Dataset sintético criado especificamente para o problema, com clienteID que se repete — primeiro projeto onde o transformer sequencial é genuinamente necessário.
+
+### Pontos Fortes
+```
+✓  identificou o artefato de simulação (tipo/merchant fixo no golpe) e corrigiu o gerador antes de modelar
+✓  rodou baseline ANTES do transformer (lição do PaySim aplicada)
+✓  identificou que AUPRC clássico não captura o valor preventivo
+✓  propôs label_preventivo para capturar o padrão sequencial correto
+✓  cold start e janela de contexto insuficiente identificados e documentados
+✓  conectou o resultado com o argumento do LDM da NeoSpace
+```
+
+### Oportunidades de Melhoria
+```
+→  poderia ter proposto o label_preventivo antes de rodar o transformer v1
+   (economia de uma rodada de treino)
+→  quantificar o impacto financeiro preventivo
+   ("150 golpes evitados × R$850 médio = R$127.500 por período de teste")
+```
+
+### Resultado do Projeto
+```
+baseline XGBoost:       PR-AUC 0.82  |  recall micro-transações 0%   |  detecta o golpe depois
+transformer sequencial: AUPRC 0.34   |  recall preventivo 100%       |  detecta ANTES do golpe
+
+lição: a escolha da métrica define o que o modelo aprende
+       e o que o modelo aprende define se ele é útil para o negócio
+       um modelo com AUPRC 0.82 que só detecta após o prejuízo
+       é menos valioso que um modelo com AUPRC 0.34 que previne 100% dos golpes
 ```

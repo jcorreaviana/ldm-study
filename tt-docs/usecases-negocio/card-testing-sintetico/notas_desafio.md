@@ -1,7 +1,7 @@
 # Notas do Desafio — Card Testing Sintético
 > Dataset: gerado sinteticamente com gerar_dataset.py
 > Formato: par híbrido — José (negócio + validação) + Claude/Cowork (implementação)
-> Status: EM ANDAMENTO
+> Status: CONCLUÍDO ✅
 
 ---
 
@@ -134,22 +134,6 @@ após histórico suficiente:
 analogia:  cartão de crédito novo
   limite baixo no início
   aumenta conforme histórico se consolida
-```
-
----
-
-## Próximas Etapas
-
-```
-⬜  transformer sequencial
-    event stream por clienteID
-    janela de 5 transações
-    label por posição
-    métrica adicional: recall nas micro-transações
-
-⬜  avaliação e comparativo baseline vs transformer
-⬜  relatório GPU (nvitop + wandb)
-⬜  score do desafio e notas finais
 ```
 
 ---

@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -7,8 +8,13 @@ import json
 
 np.random.seed(42)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', default='creditcard.csv', help='CSV bruto (Kaggle mlg-ulb/creditcardfraud)')
+parser.add_argument('--output-dir', default='.', help='pasta onde salvar train/val/test csv e preprocessing_meta.json')
+args = parser.parse_args()
+
 # ---- 1. Remover duplicatas (antes de qualquer split, para evitar leakage) ----
-df_raw = pd.read_csv('/sessions/magical-busy-rubin/mnt/uploads/creditcard.csv')
+df_raw = pd.read_csv(args.path)
 n_before = len(df_raw)
 df = df_raw.drop_duplicates().reset_index(drop=True)
 n_after = len(df)
@@ -83,7 +89,7 @@ all_idx = pd.concat([pd.Series(list(idx_train)), pd.Series(list(idx_val)), pd.Se
 print(f"   Índices duplicados entre conjuntos: {all_idx.duplicated().sum()}")
 
 # ---- Salvar ----
-out_dir = 'tt-docs/projetos/fraude/preprocessing'
+out_dir = args.output_dir
 train_df.to_csv(f'{out_dir}/train.csv', index=False)
 val_df.to_csv(f'{out_dir}/val.csv', index=False)
 test_df.to_csv(f'{out_dir}/test.csv', index=False)

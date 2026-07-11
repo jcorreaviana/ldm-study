@@ -99,22 +99,22 @@ python eda/paysim_eda.py --path dataset.csv
 python eda/analisar_namedest.py --path dataset.csv    # já rodado - números confirmados na seção 7 do EDA_paysim.md
 
 # 2. Pré-processamento
-python preprocessing/preprocess_pipeline.py --path dataset.csv --output-dir ../paysim_data
-python preprocessing/montar_event_stream.py --path dataset.csv --output-dir ../paysim_data --janela 13
+python preprocessing/preprocess_pipeline.py --path dataset.csv --output-dir ../../paysim_data
+python preprocessing/montar_event_stream.py --path dataset.csv --output-dir ../../paysim_data --janela 13
 
 # 3. Baseline tabular (rodar ANTES de continuar ajustando o transformer -
 #    ver "Diagnóstico" acima)
 python modelo/baseline_tabular.py --path dataset.csv
 
 # 4. Treino do transformer (RTX local, monitorar com nvitop em outro terminal)
-python modelo/transformer_sequencial.py --data ../paysim_data/event_stream.npz --lr 1e-3
+python modelo/transformer_sequencial.py --data ../../paysim_data/event_stream.npz --lr 1e-3
 
 # 5. Avaliação
-python avaliacao/avaliar_modelo.py --data ../paysim_data/event_stream.npz --checkpoint modelo/checkpoint_melhor_modelo.pt
+python avaliacao/avaliar_modelo.py --data ../../paysim_data/event_stream.npz --checkpoint modelo/checkpoint_melhor_modelo.pt
 ```
 
-`../paysim_data/` (tensores derivados, fora deste diretório) também não deve
-ser versionado.
+`../../paysim_data/` (`tt-docs/paysim_data/`, tensores derivados fora deste
+diretório) também não deve ser versionado.
 
 ## O que ainda não existe neste repositório (e por quê)
 
