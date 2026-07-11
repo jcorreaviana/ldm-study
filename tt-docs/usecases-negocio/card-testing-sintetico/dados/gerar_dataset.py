@@ -163,7 +163,7 @@ def gerar_cliente_fraude(clienteID):
         'valor':        valor_micro1,
         'saldo_antes':  round(saldo, 2),
         'saldo_depois': round(saldo_depois, 2),
-        'isFraud':      0   # — micro-transação não é fraude isolada
+        'isFraud':      0   # ← micro-transação não é fraude isolada
     })
     saldo = saldo_depois
 
@@ -179,23 +179,27 @@ def gerar_cliente_fraude(clienteID):
         'valor':        valor_micro2,
         'saldo_antes':  round(saldo, 2),
         'saldo_depois': round(saldo_depois, 2),
-        'isFraud':      0   # — micro-transação não é fraude isolada
+        'isFraud':      0   # ← micro-transação não é fraude isolada
     })
     saldo = saldo_depois
 
     # transação grande (golpe, dentro de 30-90 min da segunda micro)
     t_golpe += timedelta(minutes=random.randint(30, 90))
     valor_golpe = round(random.uniform(500, 2000), 2)
-    saldo_depois = calcular_saldo_depois(saldo, valor_golpe, 'transferencia')
+    # varia tipo e merchant do golpe para evitar artefato de simulação
+    # modelo não pode aprender "transferencia+online = fraude" trivialmente
+    tipo_golpe    = random.choice(['transferencia', 'saque', 'compra'])
+    merchant_golpe = random.choice(MERCHANTS)
+    saldo_depois = calcular_saldo_depois(saldo, valor_golpe, tipo_golpe)
     transacoes.append({
         'clienteID':    clienteID,
         'timestamp':    t_golpe,
-        'tipo':         'transferencia',
-        'merchant':     'online',
+        'tipo':         tipo_golpe,
+        'merchant':     merchant_golpe,
         'valor':        valor_golpe,
         'saldo_antes':  round(saldo, 2),
         'saldo_depois': round(saldo_depois, 2),
-        'isFraud':      1   # — só aqui é fraude
+        'isFraud':      1   # ← só aqui é fraude
     })
 
     return transacoes

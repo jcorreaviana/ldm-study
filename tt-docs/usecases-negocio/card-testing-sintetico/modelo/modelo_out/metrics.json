@@ -1,0 +1,48 @@
+{
+  "auprc_isfraud_real": 0.3415916010127871,
+  "n_teste": 20653,
+  "n_fraudes_reais_teste": 150,
+  "thresholds_isfraud_real": [
+    {
+      "threshold": 0.1,
+      "precision": 0.32967032967032966,
+      "recall": 1.0,
+      "f1": 0.49586776859504134
+    },
+    {
+      "threshold": 0.2,
+      "precision": 0.32967032967032966,
+      "recall": 1.0,
+      "f1": 0.49586776859504134
+    },
+    {
+      "threshold": 0.3,
+      "precision": 0.32967032967032966,
+      "recall": 1.0,
+      "f1": 0.49586776859504134
+    },
+    {
+      "threshold": 0.5,
+      "precision": 0.32967032967032966,
+      "recall": 1.0,
+      "f1": 0.49586776859504134
+    },
+    {
+      "threshold": 0.7,
+      "precision": 0.32967032967032966,
+      "recall": 1.0,
+      "f1": 0.49586776859504134
+    },
+    {
+      "threshold": 0.9,
+      "precision": 0.3303964757709251,
+      "recall": 1.0,
+      "f1": 0.4966887417218543
+    }
+  ],
+  "recall_preventivo_micro_transacional": 1.0,
+  "recall_preventivo_sequencial_alerta_antes_golpe": 1.0,
+  "n_precursoras_teste": 300,
+  "n_golpes_teste": 150,
+  "alert_threshold": 0.5
+}

@@ -305,3 +305,19 @@ Arquitetura transformer que processa tokens da esquerda para a direita, um por v
 
 **Encoder-Decoder**
 Arquitetura transformer com dois componentes: encoder processa a entrada, decoder gera a saída. Ex: T5, BART. Bom para tradução e resumo.
+
+---
+
+## Problemas de Dados e Contexto
+
+**Cold start**
+Situação em que um cliente novo não tem histórico suficiente para o modelo avaliar com confiança. Score próximo de 0.5 (incerto). Solução: limite transacional menor e autenticação mais forte nas primeiras N transações até acumular histórico.
+
+**Janela de contexto insuficiente**
+Quando o modelo não tem eventos suficientes para reconhecer um padrão sequencial. Ex: card testing precisa de pelo menos 3 eventos (micro → micro → golpe). Com 1 ou 2 transações, o score é baixo não por erro do modelo, mas por ausência de informação.
+
+**Artefato de simulação**
+Padrão artificial introduzido na geração de dados sintéticos que não existe em dados reais. Ex: 100% dos golpes como 'transferencia' + 'online' — modelo aprende essa regra trivialmente sem precisar do contexto sequencial. Solução: variar tipo e merchant do golpe no gerador.
+
+**Ponto cego do modelo**
+Situação específica onde o modelo falha sistematicamente. Ex: baseline XGBoost detecta o golpe com 94.9% de probabilidade mas não detecta as micro-transações (0.3%) — o ponto cego é exatamente a fase útil para prevenção.

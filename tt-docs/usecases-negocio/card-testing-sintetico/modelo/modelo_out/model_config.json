@@ -1,0 +1,15 @@
+{
+  "n_tipo": 4,
+  "n_merchant": 6,
+  "n_numeric": 4,
+  "d_model": 64,
+  "n_heads": 4,
+  "n_layers": 2,
+  "dim_feedforward": 128,
+  "dropout": 0.1,
+  "cat_emb_dim": 8,
+  "max_len": 64,
+  "window_size": 5,
+  "best_val_auprc": 0.9999802796167211,
+  "best_epoch": 5
+}

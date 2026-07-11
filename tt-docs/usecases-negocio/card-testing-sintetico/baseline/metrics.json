@@ -1,0 +1,76 @@
+{
+  "pr_auc": 0.8204569031010774,
+  "roc_auc": 0.9950410618792972,
+  "n_teste": 21094,
+  "n_fraudes_teste": 150,
+  "thresholds": [
+    {
+      "threshold": 0.1,
+      "precision": 0.11801730920535011,
+      "recall": 1.0,
+      "f1": 0.211118930330753,
+      "n_alertas": 1271
+    },
+    {
+      "threshold": 0.2,
+      "precision": 0.12364243943191311,
+      "recall": 0.9866666666666667,
+      "f1": 0.21974758723088345,
+      "n_alertas": 1197
+    },
+    {
+      "threshold": 0.3,
+      "precision": 0.14066985645933014,
+      "recall": 0.98,
+      "f1": 0.24602510460251045,
+      "n_alertas": 1045
+    },
+    {
+      "threshold": 0.5,
+      "precision": 0.18227848101265823,
+      "recall": 0.96,
+      "f1": 0.30638297872340425,
+      "n_alertas": 790
+    },
+    {
+      "threshold": 0.7,
+      "precision": 0.22312703583061888,
+      "recall": 0.9133333333333333,
+      "f1": 0.3586387434554974,
+      "n_alertas": 614
+    },
+    {
+      "threshold": 0.9,
+      "precision": 0.7151898734177216,
+      "recall": 0.7533333333333333,
+      "f1": 0.7337662337662337,
+      "n_alertas": 158
+    }
+  ],
+  "confusion_matrix_threshold_0.5": [
+    [
+      20298,
+      646
+    ],
+    [
+      6,
+      144
+    ]
+  ],
+  "feature_importance": {
+    "valor": 0.4756767451763153,
+    "hora": 0.16134843230247498,
+    "tipo_pagamento": 0.11681157350540161,
+    "saldo_antes": 0.05353211238980293,
+    "saldo_depois": 0.05210413411259651,
+    "tipo_saque": 0.021206753328442574,
+    "merchant_restaurante": 0.01700654812157154,
+    "merchant_supermercado": 0.01673409342765808,
+    "merchant_shopping": 0.016733866184949875,
+    "merchant_farmacia": 0.016468271613121033,
+    "tipo_compra": 0.015121442265808582,
+    "merchant_posto": 0.014130118303000927,
+    "tipo_transferencia": 0.012730098329484463,
+    "merchant_online": 0.01039578951895237
+  }
+}
